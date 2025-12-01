@@ -28,3 +28,36 @@ BEGIN
     end if;
 END$$
 DELIMITER ;
+
+-- 13.distribución de tiempo empleado por misión --
+CREATE OR REPLACE VIEW Vista_Tiempo_Mision AS
+SELECT
+    m.titulo AS Nombre_Mision,
+    COUNT(mc.mision_id_mision) AS Veces_Completada,
+    SEC_TO_TIME(SUM(TIME_TO_SEC(mc.tiempo_empleado))) AS Tiempo_Total_Empleando,
+    SEC_TO_TIME(AVG(TIME_TO_SEC(mc.tiempo_empleado))) AS Tiempo_Promedio_Empleando
+FROM
+    mision_completada mc
+JOIN
+    mision m ON mc.mision_id_mision = m.id_mision
+GROUP BY
+    m.titulo
+ORDER BY
+    Tiempo_Promedio_Empleando DESC;
+    
+SELECT * FROM Vista_Tiempo_Mision;
+
+-- Jugadores que no han Ganado Logros en los Últimos 30 Días
+CREATE OR REPLACE VIEW Vista_Ultimo_Logro AS
+SELECT
+    j.nombre AS Nombre_Jugador,
+    MAX(lh.fecha) AS Fecha_Ultimo_Logro
+FROM
+    jugador j
+JOIN
+    personaje p ON j.id_jugador = p.fk_jugador
+LEFT JOIN
+    logro_has_personaje lh ON p.id_personaje = lh.personaje_id_personaje
+GROUP BY
+    j.id_jugador, j.nombre;
+    SELECT * FROM Vista_Ultimo_Logro;
