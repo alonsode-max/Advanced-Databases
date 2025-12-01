@@ -80,13 +80,13 @@ CREATE TABLE `combate` (
   `id_personaje` int NOT NULL,
   `id_enemigo` int NOT NULL,
   `fecha` datetime NOT NULL,
-  `habilidades_id_habilidades` int NOT NULL,
+  `fk_habilidades` int NOT NULL,
   `daño` int NOT NULL,
   `ataque_enemigo` tinyint NOT NULL DEFAULT '0',
   KEY `fk_personaje_has_enemigo_enemigo1_idx` (`id_enemigo`),
   KEY `fk_personaje_has_enemigo_personaje1_idx` (`id_personaje`),
-  KEY `fk_personaje_has_enemigo_habilidades1_idx` (`habilidades_id_habilidades`),
-  CONSTRAINT `fk_personaje_has_enemigo_habilidades1` FOREIGN KEY (`habilidades_id_habilidades`) REFERENCES `habilidades` (`id_habilidades`)
+  KEY `fk_personaje_has_enemigo_habilidades1_idx` (`fk_habilidades`),
+  CONSTRAINT `fk_personaje_has_enemigo_habilidades1` FOREIGN KEY (`fk_habilidades`) REFERENCES `habilidades` (`id_habilidades`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -96,7 +96,7 @@ CREATE TABLE `combate` (
 
 LOCK TABLES `combate` WRITE;
 /*!40000 ALTER TABLE `combate` DISABLE KEYS */;
-INSERT INTO `combate` VALUES (1,1,'2025-11-25 19:00:00',1,150,0),(1,2,'2025-11-25 19:05:00',2,500,0),(1,3,'2025-11-25 19:05:00',1,2500,0),(2,1,'2025-11-25 19:05:00',2,200,0),(2,3,'2025-11-25 22:03:00',1,1,0);
+INSERT INTO `combate` VALUES (1,1,'2025-11-25 19:00:00',1,150,0),(1,2,'2025-11-25 19:05:00',2,500,0),(1,3,'2025-11-25 19:05:00',1,2500,0),(2,1,'2025-11-25 19:05:00',2,200,0),(2,3,'2025-11-25 22:03:00',1,1,0),(1,1,'2025-12-01 18:24:50',1,1130,0),(1,1,'2025-12-01 18:26:08',1,17,0),(1,1,'2025-12-01 18:26:36',1,60,0);
 /*!40000 ALTER TABLE `combate` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -132,7 +132,7 @@ CREATE TABLE `enemigo` (
 
 LOCK TABLES `enemigo` WRITE;
 /*!40000 ALTER TABLE `enemigo` DISABLE KEYS */;
-INSERT INTO `enemigo` VALUES (1,'Lobo Joven',2,1,1,4,500,500),(2,'Golem de Piedra',15,2,2,2,500,1000),(3,'Dragón de Fuego',50,3,3,1,2500,2500);
+INSERT INTO `enemigo` VALUES (1,'Lobo Joven',2,1,1,4,423,500),(2,'Golem de Piedra',15,2,2,2,500,1000),(3,'Dragón de Fuego',50,3,3,1,2500,2500);
 /*!40000 ALTER TABLE `enemigo` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -231,11 +231,11 @@ CREATE TABLE `habilidades` (
   `rango` int NOT NULL,
   `nivel` int NOT NULL,
   `fk_tipo` int NOT NULL,
-  `clase_id_clase` int NOT NULL,
+  `fk_clase` int NOT NULL,
   PRIMARY KEY (`id_habilidades`),
   KEY `fk_habilidades_tipo_habilidad1_idx` (`fk_tipo`),
-  KEY `fk_habilidades_clase1_idx` (`clase_id_clase`),
-  CONSTRAINT `fk_habilidades_clase1` FOREIGN KEY (`clase_id_clase`) REFERENCES `clase` (`id_clase`),
+  KEY `fk_habilidades_clase1_idx` (`fk_clase`),
+  CONSTRAINT `fk_habilidades_clase1` FOREIGN KEY (`fk_clase`) REFERENCES `clase` (`id_clase`),
   CONSTRAINT `fk_habilidades_tipo_habilidad1` FOREIGN KEY (`fk_tipo`) REFERENCES `tipo_habilidad` (`id_tipo_habilidad`)
 ) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -313,14 +313,14 @@ DROP TABLE IF EXISTS `logro_has_personaje`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `logro_has_personaje` (
-  `logro_id_logro` int NOT NULL,
-  `personaje_id_personaje` int NOT NULL,
+  `fk_logro` int NOT NULL,
+  `fk_personaje` int NOT NULL,
   `fecha` datetime NOT NULL,
-  PRIMARY KEY (`logro_id_logro`,`personaje_id_personaje`),
-  KEY `fk_logro_has_personaje_personaje1_idx` (`personaje_id_personaje`),
-  KEY `fk_logro_has_personaje_logro1_idx` (`logro_id_logro`),
-  CONSTRAINT `fk_logro_has_personaje_logro1` FOREIGN KEY (`logro_id_logro`) REFERENCES `logro` (`id_logro`),
-  CONSTRAINT `fk_logro_has_personaje_personaje1` FOREIGN KEY (`personaje_id_personaje`) REFERENCES `personaje` (`id_personaje`)
+  PRIMARY KEY (`fk_logro`,`fk_personaje`),
+  KEY `fk_logro_has_personaje_personaje1_idx` (`fk_personaje`),
+  KEY `fk_logro_has_personaje_logro1_idx` (`fk_logro`),
+  CONSTRAINT `fk_logro_has_personaje_logro1` FOREIGN KEY (`fk_logro`) REFERENCES `logro` (`id_logro`),
+  CONSTRAINT `fk_logro_has_personaje_personaje1` FOREIGN KEY (`fk_personaje`) REFERENCES `personaje` (`id_personaje`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -431,15 +431,15 @@ DROP TABLE IF EXISTS `mision_completada`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `mision_completada` (
-  `mision_id_mision` int NOT NULL,
-  `personaje_id_personaje` int NOT NULL,
+  `fk_mision` int NOT NULL,
+  `fk_personaje` int NOT NULL,
   `fecha` date NOT NULL,
   `tiempo_empleado` time NOT NULL,
-  PRIMARY KEY (`mision_id_mision`,`personaje_id_personaje`),
-  KEY `fk_mision_has_personaje_personaje1_idx` (`personaje_id_personaje`),
-  KEY `fk_mision_has_personaje_mision1_idx` (`mision_id_mision`),
-  CONSTRAINT `fk_mision_has_personaje_mision1` FOREIGN KEY (`mision_id_mision`) REFERENCES `mision` (`id_mision`),
-  CONSTRAINT `fk_mision_has_personaje_personaje1` FOREIGN KEY (`personaje_id_personaje`) REFERENCES `personaje` (`id_personaje`)
+  PRIMARY KEY (`fk_mision`,`fk_personaje`),
+  KEY `fk_mision_has_personaje_personaje1_idx` (`fk_personaje`),
+  KEY `fk_mision_has_personaje_mision1_idx` (`fk_mision`),
+  CONSTRAINT `fk_mision_has_personaje_mision1` FOREIGN KEY (`fk_mision`) REFERENCES `mision` (`id_mision`),
+  CONSTRAINT `fk_mision_has_personaje_personaje1` FOREIGN KEY (`fk_personaje`) REFERENCES `personaje` (`id_personaje`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -617,6 +617,7 @@ CREATE TABLE `personaje` (
   `fk_jugador` int NOT NULL,
   `fk_clase` int NOT NULL,
   `fk_base_stats` int NOT NULL,
+  `horas` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id_personaje`),
   KEY `fk_personaje_jugador1_idx` (`fk_jugador`),
   KEY `fk_personaje_clase1_idx` (`fk_clase`),
@@ -633,7 +634,7 @@ CREATE TABLE `personaje` (
 
 LOCK TABLES `personaje` WRITE;
 /*!40000 ALTER TABLE `personaje` DISABLE KEYS */;
-INSERT INTO `personaje` VALUES (1,'Aric el Guerrero',10,800,50,1,1,1),(2,'Magus Bob',12,450,250,2,2,3),(3,'Charly Ágil',5,600,100,3,3,4);
+INSERT INTO `personaje` VALUES (1,'Aric el Guerrero',10,800,50,1,1,1,0),(2,'Magus Bob',12,450,250,2,2,3,0),(3,'Charly Ágil',5,600,100,3,3,4,0);
 /*!40000 ALTER TABLE `personaje` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -737,6 +738,34 @@ INSERT INTO `region` VALUES (1,'Praderas de Inicio',1),(2,'Bosque Oscuro',10),(3
 UNLOCK TABLES;
 
 --
+-- Table structure for table `sesion`
+--
+
+DROP TABLE IF EXISTS `sesion`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sesion` (
+  `id_sesion` int NOT NULL AUTO_INCREMENT,
+  `fecha_inicio` datetime NOT NULL,
+  `fecha_fin` datetime DEFAULT NULL,
+  `fk_personaje` int NOT NULL,
+  PRIMARY KEY (`id_sesion`),
+  KEY `fk_personaje` (`fk_personaje`),
+  CONSTRAINT `sesion_ibfk_1` FOREIGN KEY (`fk_personaje`) REFERENCES `personaje` (`id_personaje`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sesion`
+--
+
+LOCK TABLES `sesion` WRITE;
+/*!40000 ALTER TABLE `sesion` DISABLE KEYS */;
+INSERT INTO `sesion` VALUES (1,'2025-01-01 20:00:00','2025-01-01 23:30:21',1);
+/*!40000 ALTER TABLE `sesion` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `tipo`
 --
 
@@ -828,4 +857,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-11-30 14:08:19
+-- Dump completed on 2025-12-01 19:07:25
