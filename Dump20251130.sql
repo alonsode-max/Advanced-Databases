@@ -276,7 +276,7 @@ CREATE TABLE `jugador` (
 
 LOCK TABLES `jugador` WRITE;
 /*!40000 ALTER TABLE `jugador` DISABLE KEYS */;
-INSERT INTO `jugador` VALUES (1,'Alice','2025-10-01',150,1),(2,'Bob','2025-10-05',200,2),(3,'Charlie','2025-11-10',50,3);
+INSERT INTO `jugador` VALUES (1,'Alice','2025-10-01',153,1),(2,'Bob','2025-10-05',200,2),(3,'Charlie','2025-11-10',50,3);
 /*!40000 ALTER TABLE `jugador` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -619,6 +619,7 @@ CREATE TABLE `personaje` (
   `fk_clase` int NOT NULL,
   `fk_base_stats` int NOT NULL,
   `horas` int NOT NULL DEFAULT '0',
+  `oro` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id_personaje`),
   KEY `fk_personaje_jugador1_idx` (`fk_jugador`),
   KEY `fk_personaje_clase1_idx` (`fk_clase`),
@@ -635,7 +636,7 @@ CREATE TABLE `personaje` (
 
 LOCK TABLES `personaje` WRITE;
 /*!40000 ALTER TABLE `personaje` DISABLE KEYS */;
-INSERT INTO `personaje` VALUES (1,'Aric el Guerrero',10,800,50,1,1,1,0),(2,'Magus Bob',12,450,250,2,2,3,0),(3,'Charly Ágil',5,600,100,3,3,4,0);
+INSERT INTO `personaje` VALUES (1,'Aric el Guerrero',10,800,50,1,1,1,3,500),(2,'Magus Bob',12,450,250,2,2,3,0,200),(3,'Charly Ágil',5,600,100,3,3,4,0,100);
 /*!40000 ALTER TABLE `personaje` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -753,7 +754,7 @@ CREATE TABLE `sesion` (
   PRIMARY KEY (`id_sesion`),
   KEY `fk_personaje` (`fk_personaje`),
   CONSTRAINT `sesion_ibfk_1` FOREIGN KEY (`fk_personaje`) REFERENCES `personaje` (`id_personaje`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -762,7 +763,7 @@ CREATE TABLE `sesion` (
 
 LOCK TABLES `sesion` WRITE;
 /*!40000 ALTER TABLE `sesion` DISABLE KEYS */;
-INSERT INTO `sesion` VALUES (1,'2025-01-01 20:00:00','2025-01-01 23:30:21',1);
+INSERT INTO `sesion` VALUES (1,'2025-01-01 20:00:00','2025-01-01 23:30:21',1),(2,'2025-01-01 20:00:00','2025-01-01 23:30:21',1),(4,'2025-01-01 20:00:00','2025-01-01 23:30:21',1),(7,'2025-01-01 20:00:00','2025-01-01 23:30:21',1);
 /*!40000 ALTER TABLE `sesion` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1049,4 +1050,4 @@ SET character_set_client = @saved_cs_client;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-12-02 11:29:05
+-- Dump completed on 2025-12-02 17:48:37
