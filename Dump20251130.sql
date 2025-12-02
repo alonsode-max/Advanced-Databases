@@ -84,11 +84,13 @@ CREATE TABLE `combate` (
   `fk_habilidades` int NOT NULL,
   `daño` int NOT NULL,
   `ataque_enemigo` tinyint NOT NULL DEFAULT '0',
+  `id_combate` int NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY (`id_combate`),
   KEY `fk_personaje_has_enemigo_enemigo1_idx` (`id_enemigo`),
   KEY `fk_personaje_has_enemigo_personaje1_idx` (`id_personaje`),
   KEY `fk_personaje_has_enemigo_habilidades1_idx` (`fk_habilidades`),
   CONSTRAINT `fk_personaje_has_enemigo_habilidades1` FOREIGN KEY (`fk_habilidades`) REFERENCES `habilidades` (`id_habilidades`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -97,7 +99,7 @@ CREATE TABLE `combate` (
 
 LOCK TABLES `combate` WRITE;
 /*!40000 ALTER TABLE `combate` DISABLE KEYS */;
-INSERT INTO `combate` VALUES (1,1,'2025-11-25 19:00:00',1,150,0),(1,2,'2025-11-25 19:05:00',2,500,0),(1,3,'2025-11-25 19:05:00',1,2500,0),(2,1,'2025-11-25 19:05:00',2,200,0),(2,3,'2025-11-25 22:03:00',1,1,0),(1,1,'2025-12-01 18:24:50',1,1130,0),(1,1,'2025-12-01 18:26:08',1,17,0),(1,1,'2025-12-01 18:26:36',1,60,0);
+INSERT INTO `combate` VALUES (1,1,'2025-11-25 19:00:00',1,150,0,1),(1,2,'2025-11-25 19:05:00',2,500,0,2),(1,3,'2025-11-25 19:05:00',1,2500,0,3),(2,1,'2025-11-25 19:05:00',2,200,0,4),(2,3,'2025-11-25 22:03:00',1,1,0,5),(1,1,'2025-12-01 18:24:50',1,1130,0,6),(1,1,'2025-12-01 18:26:08',1,17,0,7),(1,1,'2025-12-01 18:26:36',1,60,0,8);
 /*!40000 ALTER TABLE `combate` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -117,6 +119,7 @@ CREATE TABLE `enemigo` (
   `fk_base_stats` int NOT NULL,
   `vida` int NOT NULL,
   `vida_base` int NOT NULL,
+  `jugadores_derrotados` int NOT NULL,
   PRIMARY KEY (`id_enemigo`),
   KEY `fk_enemigo_region1_idx` (`fk_region`),
   KEY `fk_enemigo_rango_enemigos1_idx` (`fk_rango`),
@@ -133,7 +136,7 @@ CREATE TABLE `enemigo` (
 
 LOCK TABLES `enemigo` WRITE;
 /*!40000 ALTER TABLE `enemigo` DISABLE KEYS */;
-INSERT INTO `enemigo` VALUES (1,'Lobo Joven',2,1,1,4,423,500),(2,'Golem de Piedra',15,2,2,2,500,1000),(3,'Dragón de Fuego',50,3,3,1,2500,2500);
+INSERT INTO `enemigo` VALUES (1,'Lobo Joven',2,1,1,4,423,500,0),(2,'Golem de Piedra',15,2,2,2,500,1000,0),(3,'Dragón de Fuego',50,3,3,1,2500,2500,0);
 /*!40000 ALTER TABLE `enemigo` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -408,6 +411,7 @@ CREATE TABLE `mision` (
   `tipo` varchar(255) NOT NULL,
   `nivel_recomendad` int NOT NULL,
   `fk_npc` int NOT NULL,
+  `aceptada` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id_mision`),
   KEY `fk_mision_npc1_idx` (`fk_npc`),
   CONSTRAINT `fk_mision_npc1` FOREIGN KEY (`fk_npc`) REFERENCES `npc` (`id_npc`)
@@ -420,7 +424,7 @@ CREATE TABLE `mision` (
 
 LOCK TABLES `mision` WRITE;
 /*!40000 ALTER TABLE `mision` DISABLE KEYS */;
-INSERT INTO `mision` VALUES (1,'Recolección de Bayas','Recolección',1,1),(2,'Eliminar Goblins','Combate',10,2);
+INSERT INTO `mision` VALUES (1,'Recolección de Bayas','Recolección',1,1,0),(2,'Eliminar Goblins','Combate',10,2,0);
 /*!40000 ALTER TABLE `mision` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -532,11 +536,13 @@ CREATE TABLE `objeto_obtenido` (
   `fk_objeto` int NOT NULL,
   `fk_personaje` int NOT NULL,
   `fecha` datetime NOT NULL,
+  `id_obtencion` int NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY (`id_obtencion`),
   KEY `fk_objeto_has_personaje_personaje1_idx` (`fk_personaje`),
   KEY `fk_objeto_has_personaje_objeto1_idx` (`fk_objeto`),
   CONSTRAINT `fk_objeto_has_personaje_objeto1` FOREIGN KEY (`fk_objeto`) REFERENCES `objeto` (`id_objeto`),
   CONSTRAINT `fk_objeto_has_personaje_personaje1` FOREIGN KEY (`fk_personaje`) REFERENCES `personaje` (`id_personaje`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -545,7 +551,7 @@ CREATE TABLE `objeto_obtenido` (
 
 LOCK TABLES `objeto_obtenido` WRITE;
 /*!40000 ALTER TABLE `objeto_obtenido` DISABLE KEYS */;
-INSERT INTO `objeto_obtenido` VALUES (3,1,'2025-11-24 10:00:00'),(4,1,'2025-11-30 13:59:25'),(4,2,'2025-11-25 15:30:00'),(4,2,'2025-11-30 14:06:11');
+INSERT INTO `objeto_obtenido` VALUES (3,1,'2025-11-24 10:00:00',1),(4,1,'2025-11-30 13:59:25',2),(4,2,'2025-11-25 15:30:00',3),(4,2,'2025-11-30 14:06:11',4);
 /*!40000 ALTER TABLE `objeto_obtenido` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -620,6 +626,7 @@ CREATE TABLE `personaje` (
   `fk_base_stats` int NOT NULL,
   `horas` int NOT NULL DEFAULT '0',
   `oro` int NOT NULL DEFAULT '0',
+  `enemigos_derrotados` int NOT NULL,
   PRIMARY KEY (`id_personaje`),
   KEY `fk_personaje_jugador1_idx` (`fk_jugador`),
   KEY `fk_personaje_clase1_idx` (`fk_clase`),
@@ -636,7 +643,7 @@ CREATE TABLE `personaje` (
 
 LOCK TABLES `personaje` WRITE;
 /*!40000 ALTER TABLE `personaje` DISABLE KEYS */;
-INSERT INTO `personaje` VALUES (1,'Aric el Guerrero',10,800,50,1,1,1,3,500),(2,'Magus Bob',12,450,250,2,2,3,0,200),(3,'Charly Ágil',5,600,100,3,3,4,0,100);
+INSERT INTO `personaje` VALUES (1,'Aric el Guerrero',10,800,50,1,1,1,3,500,0),(2,'Magus Bob',12,450,250,2,2,3,0,200,0),(3,'Charly Ágil',5,600,100,3,3,4,0,100,0);
 /*!40000 ALTER TABLE `personaje` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -879,6 +886,20 @@ SET @saved_cs_client     = @@character_set_client;
 SET character_set_client = @saved_cs_client;
 
 --
+-- Temporary view structure for view `vista_ingresos`
+--
+
+DROP TABLE IF EXISTS `vista_ingresos`;
+/*!50001 DROP VIEW IF EXISTS `vista_ingresos`*/;
+SET @saved_cs_client     = @@character_set_client;
+/*!50503 SET character_set_client = utf8mb4 */;
+/*!50001 CREATE VIEW `vista_ingresos` AS SELECT 
+ 1 AS `Recaudado`,
+ 1 AS `Region`,
+ 1 AS `nombre`*/;
+SET character_set_client = @saved_cs_client;
+
+--
 -- Temporary view structure for view `vista_jugadores_menos_nivel_misiones`
 --
 
@@ -970,6 +991,24 @@ SET character_set_client = @saved_cs_client;
 /*!50001 SET collation_connection      = @saved_col_connection */;
 
 --
+-- Final view structure for view `vista_ingresos`
+--
+
+/*!50001 DROP VIEW IF EXISTS `vista_ingresos`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8mb4 */;
+/*!50001 SET character_set_results     = utf8mb4 */;
+/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
+/*!50001 VIEW `vista_ingresos` AS select sum(`transaccion`.`precio`) AS `Recaudado`,`r`.`nombre` AS `Region`,`npc`.`nombre` AS `nombre` from (((`transaccion` join `mercado` on((`mercado`.`id_mercado` = `transaccion`.`fk_mercado`))) join `npc` on((`mercado`.`fk_npc` = `npc`.`id_npc`))) join `region` `r` on((`npc`.`fk_region` = `r`.`id_region`))) group by `r`.`nombre`,`npc`.`nombre` */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
 -- Final view structure for view `vista_jugadores_menos_nivel_misiones`
 --
 
@@ -1050,4 +1089,4 @@ SET character_set_client = @saved_cs_client;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-12-02 17:48:37
+-- Dump completed on 2025-12-02 18:16:32

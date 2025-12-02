@@ -59,15 +59,15 @@ BEGIN
 END$$
 delimiter ;
 
--- Trigger aumentar tiempo de juego tanto del personaje como del jugador (No funciona todavia)
+-- Trigger aumentar tiempo de juego tanto del personaje como del jugador
 delimiter $$
 DROP TRIGGER añadir_horas$$
 CREATE TRIGGER  añadir_horas AFTER INSERT ON sesion FOR each row 
 BEGIN 
-	declare añadir_horas int;
-	select timestampdiff(hour, fecha_inicio, fecha_fin) into añadir_horas;
+	declare añadir_hora int;
+	select timestampdiff(hour, new.fecha_inicio, new.fecha_fin) into añadir_hora;
     update personaje inner join jugador on id_jugador=fk_jugador 
-    set horas = horas+añadir_horas, horas_jugadas = horas_jugadas + añadir_horas where new.fk_personaje=id_personaje;
+    set horas = horas+añadir_hora, horas_jugadas = horas_jugadas + añadir_hora where new.fk_personaje=id_personaje;
 END$$
 delimiter ;
 insert into sesion(fecha_inicio,fecha_fin,fk_personaje) values("2025-01-01 20:00:00","2025-01-01 23:30:21",1);
@@ -107,9 +107,13 @@ CREATE OR REPLACE VIEW Vista_Mortalidad AS
 SELECT * FROM Vista_Mortalidad;
 
 -- 5. Media, mediana y porcentil 90 de daño por combate
-CREATE OR REPLACE VIEW Vista_Daño_Combate AS
+CREATE OR REPLACE VIEW Vista_Media_Daño AS
+SELECT avg(daño) AS media FROM combate;
 
-SELECT * FROM Vista_Daño_Combate;
+SELECT * FROM Vista_Media_daño;
+
+CREATE OR REPLACE VIEW Vista_Media_Daño AS
+SELECT avg(daño) AS media FROM combate;
 
 -- 6. Rareza mas frecuente
 CREATE OR REPLACE VIEW Vista_Rareza_Frecuente AS
@@ -119,7 +123,12 @@ SELECT * FROM Vista_Rareza_Frecuente;
 
 -- 7. Ingresos de mercados por ciudad
 CREATE OR REPLACE VIEW Vista_Ingresos AS
-
+SELECT sum(precio) AS Recaudado, r.nombre as Region, npc.nombre FROM transaccion 
+INNER JOIN mercado ON id_mercado = fk_mercado 
+INNER JOIN npc ON fk_npc=id_npc
+INNER JOIN region AS r ON fk_region=id_region
+ GROUP BY r.nombre, npc.nombre;
+ 
 SELECT * FROM Vista_Ingresos;
 
 -- 8. Ranking de gremios por reputación y miembros activos
