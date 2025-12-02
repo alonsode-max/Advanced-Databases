@@ -55,6 +55,7 @@ CREATE TABLE `clase` (
   `id_clase` int NOT NULL AUTO_INCREMENT,
   `descripcion` text NOT NULL,
   `atributos` text NOT NULL,
+  `nombre` varchar(255) NOT NULL,
   PRIMARY KEY (`id_clase`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -65,7 +66,7 @@ CREATE TABLE `clase` (
 
 LOCK TABLES `clase` WRITE;
 /*!40000 ALTER TABLE `clase` DISABLE KEYS */;
-INSERT INTO `clase` VALUES (1,'Guerrero enfocado en el combate cuerpo a cuerpo.','Fuerza, Vitalidad'),(2,'Mago especializado en hechizos ofensivos.','Intelecto, Maná'),(3,'Pícaro ágil, experto en evasión y golpes críticos.','Agilidad, Suerte'),(4,'Sanador de apoyo con hechizos de protección.','Espíritu, Resistencia');
+INSERT INTO `clase` VALUES (1,'Guerrero enfocado en el combate cuerpo a cuerpo.','Fuerza, Vitalidad','Guerrero'),(2,'Mago especializado en hechizos ofensivos.','Intelecto, Maná','Mago'),(3,'Pícaro ágil, experto en evasión y golpes críticos.','Agilidad, Suerte','Asesino'),(4,'Sanador de apoyo con hechizos de protección.','Espíritu, Resistencia','Curandero');
 /*!40000 ALTER TABLE `clase` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -449,7 +450,7 @@ CREATE TABLE `mision_completada` (
 
 LOCK TABLES `mision_completada` WRITE;
 /*!40000 ALTER TABLE `mision_completada` DISABLE KEYS */;
-INSERT INTO `mision_completada` VALUES (1,1,'2025-11-24','00:15:00'),(1,2,'2025-11-25','00:10:00');
+INSERT INTO `mision_completada` VALUES (1,1,'2025-11-24','00:15:00'),(1,2,'2025-11-25','00:10:00'),(2,3,'2025-11-27','00:50:10');
 /*!40000 ALTER TABLE `mision_completada` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -494,19 +495,19 @@ CREATE TABLE `objeto` (
   `nivel_requerido` int NOT NULL,
   `precio` float NOT NULL,
   `efecto` text,
-  `fk_idtipo` int NOT NULL,
-  `fk_idrareza` int NOT NULL,
-  `fk_idfuente` int NOT NULL,
+  `fk_tipo` int NOT NULL,
+  `fk_rareza` int NOT NULL,
+  `fk_fuente` int NOT NULL,
   `fk_idmercado` int DEFAULT NULL,
   PRIMARY KEY (`id_objeto`),
-  KEY `fk_objeto_tipo1_idx` (`fk_idtipo`),
-  KEY `fk_objeto_rareza1_idx` (`fk_idrareza`),
-  KEY `fk_objeto_fuente1_idx` (`fk_idfuente`),
+  KEY `fk_objeto_tipo1_idx` (`fk_tipo`),
+  KEY `fk_objeto_rareza1_idx` (`fk_rareza`),
+  KEY `fk_objeto_fuente1_idx` (`fk_fuente`),
   KEY `fk_objeto_mercado1_idx` (`fk_idmercado`),
-  CONSTRAINT `fk_objeto_fuente1` FOREIGN KEY (`fk_idfuente`) REFERENCES `fuente` (`id_fuente`),
+  CONSTRAINT `fk_objeto_fuente1` FOREIGN KEY (`fk_fuente`) REFERENCES `fuente` (`id_fuente`),
   CONSTRAINT `fk_objeto_mercado1` FOREIGN KEY (`fk_idmercado`) REFERENCES `mercado` (`id_mercado`),
-  CONSTRAINT `fk_objeto_rareza1` FOREIGN KEY (`fk_idrareza`) REFERENCES `rareza` (`id_rareza`),
-  CONSTRAINT `fk_objeto_tipo1` FOREIGN KEY (`fk_idtipo`) REFERENCES `tipo` (`id_tipo`)
+  CONSTRAINT `fk_objeto_rareza1` FOREIGN KEY (`fk_rareza`) REFERENCES `rareza` (`id_rareza`),
+  CONSTRAINT `fk_objeto_tipo1` FOREIGN KEY (`fk_tipo`) REFERENCES `tipo` (`id_tipo`)
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -823,18 +824,18 @@ DROP TABLE IF EXISTS `transaccion`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `transaccion` (
-  `mercado_idmercado` int NOT NULL,
-  `personaje_id_personaje` int NOT NULL,
+  `fk_mercado` int NOT NULL,
+  `fk_personaje` int NOT NULL,
   `precio` float NOT NULL,
   `fecha` datetime NOT NULL,
-  `fk_idobjeto` int NOT NULL,
-  PRIMARY KEY (`mercado_idmercado`,`personaje_id_personaje`),
-  KEY `fk_mercado_has_personaje_personaje1_idx` (`personaje_id_personaje`),
-  KEY `fk_mercado_has_personaje_mercado1_idx` (`mercado_idmercado`),
-  KEY `fk_transaccion_objeto1_idx` (`fk_idobjeto`),
-  CONSTRAINT `fk_mercado_has_personaje_mercado1` FOREIGN KEY (`mercado_idmercado`) REFERENCES `mercado` (`id_mercado`),
-  CONSTRAINT `fk_mercado_has_personaje_personaje1` FOREIGN KEY (`personaje_id_personaje`) REFERENCES `personaje` (`id_personaje`),
-  CONSTRAINT `fk_transaccion_objeto1` FOREIGN KEY (`fk_idobjeto`) REFERENCES `objeto` (`id_objeto`)
+  `fk_objeto` int NOT NULL,
+  PRIMARY KEY (`fk_mercado`,`fk_personaje`),
+  KEY `fk_mercado_has_personaje_personaje1_idx` (`fk_personaje`),
+  KEY `fk_mercado_has_personaje_mercado1_idx` (`fk_mercado`),
+  KEY `fk_transaccion_objeto1_idx` (`fk_objeto`),
+  CONSTRAINT `fk_mercado_has_personaje_mercado1` FOREIGN KEY (`fk_mercado`) REFERENCES `mercado` (`id_mercado`),
+  CONSTRAINT `fk_mercado_has_personaje_personaje1` FOREIGN KEY (`fk_personaje`) REFERENCES `personaje` (`id_personaje`),
+  CONSTRAINT `fk_transaccion_objeto1` FOREIGN KEY (`fk_objeto`) REFERENCES `objeto` (`id_objeto`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -847,6 +848,197 @@ LOCK TABLES `transaccion` WRITE;
 INSERT INTO `transaccion` VALUES (1,1,10.5,'2025-11-25 18:00:00',1),(1,3,5,'2025-11-25 18:05:00',2);
 /*!40000 ALTER TABLE `transaccion` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Temporary view structure for view `vista_compras`
+--
+
+DROP TABLE IF EXISTS `vista_compras`;
+/*!50001 DROP VIEW IF EXISTS `vista_compras`*/;
+SET @saved_cs_client     = @@character_set_client;
+/*!50503 SET character_set_client = utf8mb4 */;
+/*!50001 CREATE VIEW `vista_compras` AS SELECT 
+ 1 AS `count(fk_objeto)`,
+ 1 AS `precio`,
+ 1 AS `nombre`*/;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Temporary view structure for view `vista_gremios`
+--
+
+DROP TABLE IF EXISTS `vista_gremios`;
+/*!50001 DROP VIEW IF EXISTS `vista_gremios`*/;
+SET @saved_cs_client     = @@character_set_client;
+/*!50503 SET character_set_client = utf8mb4 */;
+/*!50001 CREATE VIEW `vista_gremios` AS SELECT 
+ 1 AS `count(id_miembro_gremio)`,
+ 1 AS `trofeos`,
+ 1 AS `nombre`*/;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Temporary view structure for view `vista_jugadores_menos_nivel_misiones`
+--
+
+DROP TABLE IF EXISTS `vista_jugadores_menos_nivel_misiones`;
+/*!50001 DROP VIEW IF EXISTS `vista_jugadores_menos_nivel_misiones`*/;
+SET @saved_cs_client     = @@character_set_client;
+/*!50503 SET character_set_client = utf8mb4 */;
+/*!50001 CREATE VIEW `vista_jugadores_menos_nivel_misiones` AS SELECT 
+ 1 AS `nombre`,
+ 1 AS `titulo`,
+ 1 AS `nivel_recomendad`,
+ 1 AS `nivel`*/;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Temporary view structure for view `vista_progreso`
+--
+
+DROP TABLE IF EXISTS `vista_progreso`;
+/*!50001 DROP VIEW IF EXISTS `vista_progreso`*/;
+SET @saved_cs_client     = @@character_set_client;
+/*!50503 SET character_set_client = utf8mb4 */;
+/*!50001 CREATE VIEW `vista_progreso` AS SELECT 
+ 1 AS `count(mc.fk_mision)`,
+ 1 AS `nombre`,
+ 1 AS `horas`*/;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Temporary view structure for view `vista_promedio_clase`
+--
+
+DROP TABLE IF EXISTS `vista_promedio_clase`;
+/*!50001 DROP VIEW IF EXISTS `vista_promedio_clase`*/;
+SET @saved_cs_client     = @@character_set_client;
+/*!50503 SET character_set_client = utf8mb4 */;
+/*!50001 CREATE VIEW `vista_promedio_clase` AS SELECT 
+ 1 AS `sum(p.nivel)`,
+ 1 AS `nombre`*/;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Temporary view structure for view `vista_rareza_frecuente`
+--
+
+DROP TABLE IF EXISTS `vista_rareza_frecuente`;
+/*!50001 DROP VIEW IF EXISTS `vista_rareza_frecuente`*/;
+SET @saved_cs_client     = @@character_set_client;
+/*!50503 SET character_set_client = utf8mb4 */;
+/*!50001 CREATE VIEW `vista_rareza_frecuente` AS SELECT 
+ 1 AS `cantidad`,
+ 1 AS `nombre_rareza`*/;
+SET character_set_client = @saved_cs_client;
+
+--
+-- Final view structure for view `vista_compras`
+--
+
+/*!50001 DROP VIEW IF EXISTS `vista_compras`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8mb4 */;
+/*!50001 SET character_set_results     = utf8mb4 */;
+/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
+/*!50001 VIEW `vista_compras` AS select count(`t`.`fk_objeto`) AS `count(fk_objeto)`,`t`.`precio` AS `precio`,`objeto`.`nombre` AS `nombre` from (`transaccion` `t` join `objeto` on((`t`.`fk_objeto` = `objeto`.`id_objeto`))) group by `t`.`precio`,`objeto`.`nombre` */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
+-- Final view structure for view `vista_gremios`
+--
+
+/*!50001 DROP VIEW IF EXISTS `vista_gremios`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8mb4 */;
+/*!50001 SET character_set_results     = utf8mb4 */;
+/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
+/*!50001 VIEW `vista_gremios` AS select count(`miembro_gremio`.`id_miembro_gremio`) AS `count(id_miembro_gremio)`,`gremio`.`trofeos` AS `trofeos`,`gremio`.`nombre` AS `nombre` from (`miembro_gremio` join `gremio` on((`miembro_gremio`.`fk_gremio` = `gremio`.`id_gremio`))) group by `gremio`.`nombre`,`gremio`.`trofeos` order by `gremio`.`trofeos` */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
+-- Final view structure for view `vista_jugadores_menos_nivel_misiones`
+--
+
+/*!50001 DROP VIEW IF EXISTS `vista_jugadores_menos_nivel_misiones`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8mb4 */;
+/*!50001 SET character_set_results     = utf8mb4 */;
+/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
+/*!50001 VIEW `vista_jugadores_menos_nivel_misiones` AS select `p`.`nombre` AS `nombre`,`m`.`titulo` AS `titulo`,`m`.`nivel_recomendad` AS `nivel_recomendad`,`p`.`nivel` AS `nivel` from ((`personaje` `p` join `mision_completada` `mc` on((`mc`.`fk_personaje` = `p`.`id_personaje`))) join `mision` `m` on((`mc`.`fk_mision` = `m`.`id_mision`))) where (`p`.`nivel` < `m`.`nivel_recomendad`) */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
+-- Final view structure for view `vista_progreso`
+--
+
+/*!50001 DROP VIEW IF EXISTS `vista_progreso`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8mb4 */;
+/*!50001 SET character_set_results     = utf8mb4 */;
+/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
+/*!50001 VIEW `vista_progreso` AS select count(`mc`.`fk_mision`) AS `count(mc.fk_mision)`,`p`.`nombre` AS `nombre`,`p`.`horas` AS `horas` from (`mision_completada` `mc` join `personaje` `p` on((`mc`.`fk_personaje` = `p`.`id_personaje`))) group by `p`.`nombre`,`p`.`horas` order by `p`.`horas` */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
+-- Final view structure for view `vista_promedio_clase`
+--
+
+/*!50001 DROP VIEW IF EXISTS `vista_promedio_clase`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8mb4 */;
+/*!50001 SET character_set_results     = utf8mb4 */;
+/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
+/*!50001 VIEW `vista_promedio_clase` AS select sum(`p`.`nivel`) AS `sum(p.nivel)`,`c`.`nombre` AS `nombre` from (`clase` `c` join `personaje` `p` on((`p`.`fk_clase` = `c`.`id_clase`))) group by `c`.`nombre` */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
+
+--
+-- Final view structure for view `vista_rareza_frecuente`
+--
+
+/*!50001 DROP VIEW IF EXISTS `vista_rareza_frecuente`*/;
+/*!50001 SET @saved_cs_client          = @@character_set_client */;
+/*!50001 SET @saved_cs_results         = @@character_set_results */;
+/*!50001 SET @saved_col_connection     = @@collation_connection */;
+/*!50001 SET character_set_client      = utf8mb4 */;
+/*!50001 SET character_set_results     = utf8mb4 */;
+/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
+/*!50001 CREATE ALGORITHM=UNDEFINED */
+/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
+/*!50001 VIEW `vista_rareza_frecuente` AS select count(`objeto_obtenido`.`fk_objeto`) AS `cantidad`,`rareza`.`nombre_rareza` AS `nombre_rareza` from ((`objeto_obtenido` join `objeto` on((`objeto_obtenido`.`fk_objeto` = `objeto`.`id_objeto`))) join `rareza` on((`objeto`.`fk_rareza` = `rareza`.`id_rareza`))) group by `objeto`.`fk_rareza` order by `cantidad` */;
+/*!50001 SET character_set_client      = @saved_cs_client */;
+/*!50001 SET character_set_results     = @saved_cs_results */;
+/*!50001 SET collation_connection      = @saved_col_connection */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -857,4 +1049,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-12-01 19:07:25
+-- Dump completed on 2025-12-02 11:29:05

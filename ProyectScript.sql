@@ -84,6 +84,77 @@ insert into sesion(fecha_inicio,fecha_fin,fk_personaje) values("2025-01-01 20:00
 
 -- Vistas
 
+-- 1. Jugadores con mayor progresión por hora jugada
+CREATE OR REPLACE VIEW Vista_Progreso AS
+SELECT count(mc.fk_mision), p.nombre, p.horas  FROM mision_completada as mc INNER JOIN personaje as p ON mc.fk_personaje=p.id_personaje GROUP BY p.nombre,p.horas ORDER BY p.horas;
+
+SELECT * FROM Vista_Progreso;
+
+-- 2. Promedio de nivel por clase
+CREATE OR REPLACE VIEW Vista_Promedio_Clase AS
+SELECT sum(p.nivel), c.nombre FROM clase as c INNER JOIN personaje as p ON p.fk_clase=c.id_clase GROUP BY c.nombre ORDER BY p.nivel;
+
+SELECT * FROM Vista_Promedio_clase;
+
+-- 3. Tasa exito misiones por tipo
+CREATE OR REPLACE VIEW Vista_Exito_Mision AS
+
+SELECT * FROM Vista_Exito_Mision;
+
+-- 4. Criaturas que generan mayor mortalidad
+CREATE OR REPLACE VIEW Vista_Mortalidad AS
+
+SELECT * FROM Vista_Mortalidad;
+
+-- 5. Media, mediana y porcentil 90 de daño por combate
+CREATE OR REPLACE VIEW Vista_Daño_Combate AS
+
+SELECT * FROM Vista_Daño_Combate;
+
+-- 6. Rareza mas frecuente
+CREATE OR REPLACE VIEW Vista_Rareza_Frecuente AS
+SELECT count(fk_objeto) AS cantidad, nombre_rareza FROM objeto_obtenido INNER JOIN objeto ON fk_objeto=id_objeto INNER JOIN rareza ON fk_rareza=id_rareza GROUP BY fk_rareza ORDER BY cantidad;
+
+SELECT * FROM Vista_Rareza_Frecuente;
+
+-- 7. Ingresos de mercados por ciudad
+CREATE OR REPLACE VIEW Vista_Ingresos AS
+
+SELECT * FROM Vista_Ingresos;
+
+-- 8. Ranking de gremios por reputación y miembros activos
+CREATE OR REPLACE VIEW Vista_Gremios AS
+SELECT count(id_miembro_gremio), trofeos, nombre FROM miembro_gremio INNER JOIN gremio ON fk_gremio=id_gremio GROUP BY nombre, trofeos ORDER BY trofeos;
+
+SELECT * FROM Vista_Gremios;
+
+-- 9. Jugadores que completan misiones por encima del nivel recomendado
+CREATE OR REPLACE VIEW Vista_Jugadores_Menos_Nivel_Misiones AS
+SELECT p.nombre, m.titulo,m.nivel_recomendad, p.nivel 
+FROM personaje AS p 
+INNER JOIN mision_completada AS mc ON mc.fk_personaje=p.id_personaje 
+INNER JOIN mision AS m ON mc.fk_mision=m.id_mision 
+WHERE p.nivel<m.nivel_recomendad;
+
+SELECT * FROM Vista_Jugadores_Menos_Nivel_Misiones;
+
+-- 10. Objetos más comprados
+CREATE OR REPLACE VIEW Vista_Compras AS
+SELECT count(fk_objeto) AS ventas, t.precio, nombre FROM transaccion as t INNER JOIN objeto ON fk_objeto=id_objeto GROUP BY precio, nombre;
+
+SELECT * FROM Vista_Compras;
+
+-- 11. Analisis outliers oro acumulado
+CREATE OR REPLACE VIEW Vista_Oro AS
+
+SELECT * FROM Vista_Oro;
+
+-- 12. Correlacion entre clase y tasa de victorias en combate
+CREATE OR REPLACE VIEW Vista_Clase_Victoria AS
+
+SELECT * FROM Vista_Clase_Victoria;
+
+
 -- 13.distribución de tiempo empleado por misión --
 CREATE OR REPLACE VIEW Vista_Tiempo_Mision AS
 SELECT
