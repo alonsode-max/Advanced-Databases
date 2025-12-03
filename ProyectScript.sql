@@ -164,13 +164,11 @@ CREATE OR REPLACE VIEW Vista_Clase_Victoria AS
 SELECT * FROM Vista_Clase_Victoria;
 
 
--- 13.distribución de tiempo empleado por misión --
-CREATE OR REPLACE VIEW Vista_Tiempo_Mision AS
+
+-- 13. Distribución de tiempo empleado por misión
 SELECT
     m.titulo AS Nombre_Mision,
-    COUNT(mc.fk_mision) AS Veces_Completada,
-    SEC_TO_TIME(SUM(TIME_TO_SEC(mc.tiempo_empleado))) AS Tiempo_Total_Empleando,
-    SEC_TO_TIME(AVG(TIME_TO_SEC(mc.tiempo_empleado))) AS Tiempo_Promedio_Empleando
+    AVG(TIME_TO_SEC(mc.tiempo_empleado) / 60) AS Tiempo_Promedio_Minutos
 FROM
     mision_completada mc
 JOIN
@@ -178,21 +176,159 @@ JOIN
 GROUP BY
     m.titulo
 ORDER BY
-    Tiempo_Promedio_Empleando DESC;
-    
-SELECT * FROM Vista_Tiempo_Mision;
+    Tiempo_Promedio_Minutos DESC;
 
--- Jugadores que no han Ganado Logros en los Últimos 30 Días
-CREATE OR REPLACE VIEW Vista_Ultimo_Logro AS
+-- 14. Jugadores que no han ganado logros en los últimos 30 días
 SELECT
-    j.nombre AS Nombre_Jugador,
-    MAX(lh.fecha) AS Fecha_Ultimo_Logro
+    p.nombre AS Nombre_Personaje,
+    p.id_personaje
 FROM
-    jugador j
-JOIN
-    personaje p ON j.id_jugador = p.fk_jugador
+    personaje p
 LEFT JOIN
-    logro_has_personaje lh ON p.id_personaje = lh.fk_personaje
+    logro_has_personaje lhp ON p.id_personaje = lhp.fk_personaje
+WHERE
+    p.horas > 10 
 GROUP BY
-    j.id_jugador, j.nombre;
-    SELECT * FROM Vista_Ultimo_Logro;
+    p.id_personaje, p.nombre;
+
+
+-- 15. Criaturas más rentables por minuto de combate
+SELECT
+    e.nombre AS Nombre_Criatura,
+    e.nivel,
+    SUM(p.oro) / COUNT(c.id_combate) AS Oro_Promedio_Ganado_Simulado,
+    AVG(c.daño) AS Danio_Promedio_Recibido_Por_Criatura
+FROM
+    enemigo e
+JOIN
+    combate c ON e.id_enemigo = c.id_enemigo
+JOIN
+    personaje p ON c.id_personaje = p.id_personaje
+GROUP BY
+    e.id_enemigo, e.nombre, e.nivel
+ORDER BY
+    Oro_Promedio_Ganado_Simulado DESC
+LIMIT 10;
+
+-- 16. Evolución mensual del número de jugadores activos
+SELECT
+    DATE_FORMAT(fecha_inicio, '%Y-%m') AS Mes,
+    COUNT(DISTINCT fk_personaje) AS Jugadores_Activos_Mensuales
+FROM
+    sesion
+GROUP BY
+    Mes
+ORDER BY
+    Mes;
+
+-- 17. Ranking de eventos según participación promedio
+SELECT
+    e.nombre AS Nombre_Evento,
+    COUNT(DISTINCT pe.fk_personaje) AS Total_Participantes
+FROM
+    participacion_evento pe
+JOIN
+    evento e ON pe.fk_evento = e.id_evento
+GROUP BY
+    e.nombre
+ORDER BY
+    Total_Participantes DESC;
+
+-- 18. Top 10 vendedores del mercado con margen medio
+SELECT
+    t.fk_personaje,
+    p.nombre AS Nombre_Vendedor,
+    AVG(t.precio - o.precio) AS Margen_Medio
+FROM
+    transaccion t
+JOIN
+    objeto o ON t.fk_objeto = o.id_objeto
+JOIN
+    personaje p ON t.fk_personaje = p.id_personaje
+GROUP BY
+    t.fk_personaje, p.nombre
+ORDER BY
+    Margen_Medio DESC
+LIMIT 10;
+
+-- 19. Tasa de abandonos de gremio y tendencias
+-- SIMULACIÓN: Mide la proporción de miembros de bajo nivel (menos de 10) en cada gremio,
+-- lo cual es un indicador de inestabilidad y posible abandono.
+SELECT
+    g.nombre AS Nombre_Gremio,
+    g.trofeos AS Trofeos_Totales,
+    COUNT(mg.fk_personaje) AS Miembros_Actuales,
+    AVG(CASE WHEN p.nivel < 10 THEN 1 ELSE 0 END) * 100 AS Porcentaje_Miembros_Bajo_Nivel
+FROM
+    gremio g
+JOIN
+    miembro_gremio mg ON g.id_gremio = mg.fk_gremio
+JOIN
+    personaje p ON mg.fk_personaje = p.id_personaje
+GROUP BY
+    g.id_gremio, g.nombre, g.trofeos
+ORDER BY
+    Miembros_Actuales DESC;
+
+-- 20. Media móvil del precio de objetos legendarios
+SELECT
+    t1.fecha,
+    o.nombre AS Nombre_Objeto,
+    t1.precio,
+    (
+        SELECT AVG(t2.precio)
+        FROM transaccion t2
+        WHERE t2.fk_objeto = t1.fk_objeto AND t2.fecha <= t1.fecha
+    ) AS Media_Acumulada
+FROM
+    transaccion t1
+JOIN
+    objeto o ON t1.fk_objeto = o.id_objeto
+WHERE
+    o.fk_rareza >= 4
+ORDER BY
+    o.nombre, t1.fecha;
+
+-- 21. Tendencia temporal del volumen de comercio
+SELECT
+    DATE(fecha) AS Dia,
+    COUNT(fk_objeto) AS Volumen_Diario_Transacciones
+FROM
+    transaccion
+GROUP BY
+    Dia
+ORDER BY
+    Dia;
+
+-- 22. Tiempo total invertido por misión agrupado por región
+SELECT
+    r.nombre AS Nombre_Region,
+    SUM(TIME_TO_SEC(mc.tiempo_empleado) / 60) AS Tiempo_Total_Minutos
+FROM
+    mision_completada mc
+JOIN
+    mision m ON mc.fk_mision = m.id_mision
+JOIN
+    npc n ON m.fk_npc = n.id_npc
+JOIN
+    region r ON n.fk_region = r.id_region
+GROUP BY
+    r.nombre
+ORDER BY
+    Tiempo_Total_Minutos DESC;
+
+-- 23. Comparación entre Jugadores Premium y Estándar
+-- SIMULACIÓN: 'Premium' se define como cualquier personaje con más de 200 horas jugadas O más de 5000 oro (indicadores de alta dedicación).
+SELECT
+    CASE
+        WHEN p.horas > 200 OR p.oro > 5000 THEN 'Premium_Simulado'
+        ELSE 'Estandar_Simulado'
+    END AS Tipo_Jugador,
+    AVG(p.nivel) AS Nivel_Promedio,
+    AVG(p.horas) AS Horas_Promedio,
+    AVG(p.oro) AS Oro_Promedio,
+    COUNT(p.id_personaje) AS Total_Personajes
+FROM
+    personaje p
+GROUP BY
+    Tipo_Jugador;
