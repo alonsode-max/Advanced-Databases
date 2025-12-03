@@ -1,107 +1,439 @@
 USE `databases`;
+USE `databases`;
 
--- Deshabilitar la verificación de claves foráneas temporalmente
-SET FOREIGN_KEY_CHECKS = 0;
+-- ====================================================================
+-- SECCIÓN DE PRE-REQUISITOS (Asegurando todas las Claves Foráneas)
+-- ====================================================================
 
--- ** Tablas sin dependencias FK o con FK a sí mismas **
+-- --- Base Stats ---
+-- IDs 1-4 ya existen. DEBEMOS asegurar que 5-19 se inserten ANTES de usarlos.
+INSERT INTO `base_stats` (`ataque`, `defensa`, `velocidad`, `magia`) VALUES
+(75, 75, 75, 75),   -- ID 5: Balanceado (Faltante)
+(150, 50, 30, 10),  -- ID 6: Bruto (Faltante)
+(20, 30, 100, 150), -- ID 7: Mago Veloz (Faltante)
+(100, 100, 30, 30), -- ID 8: Tanque Lento (Faltante)
+(50, 60, 150, 40),  -- ID 9: Asesino Rápido (Faltante)
+(110, 80, 50, 50),  -- ID 10: Guerrero/Mago Híbrido (Faltante)
+(40, 40, 40, 40),   -- ID 11: Base baja (Faltante)
+-- A partir de aquí, las inserciones originales del script:
+(60, 150, 20, 50),  -- ID 12: Tanque puro
+(180, 20, 10, 10),  -- ID 13: Cañón de cristal (Alto Ataque, baja defensa)
+(30, 30, 180, 50),  -- ID 14: Sombra Veloz
+(10, 10, 50, 200),  -- ID 15: Arcano
+(90, 90, 90, 90),   -- ID 16: Élite Balanceado
+(130, 60, 40, 70),  -- ID 17: Bruto Mágico
+(20, 150, 10, 20),  -- ID 18: Muro de Escudo
+(100, 100, 100, 100); -- ID 19: Perfectamente Balanceado
 
--- 1. base_stats
-INSERT INTO `base_stats` VALUES (1,120,80,50,20),(2,60,100,40,50),(3,30,40,60,150),(4,90,70,70,70);
+-- --- Logros ---
+-- CONSOLIDACIÓN DE LOGROS (Asegurando IDs 1 a 20)
+INSERT IGNORE INTO `logro` (`id_logro`, `fk_rareza`) VALUES
+(1, 1), -- Común (Original)
+(2, 2), -- Raro (Original)
+(3, 3), -- Épico (Original)
+(4, 1), -- Común - "Primeros pasos"
+(5, 1), -- Común - "Diez misiones"
+(6, 2), -- Raro - "Matador de monstruos"
+(7, 2), -- Raro - "Aliado del Gremio"
+(8, 3), -- Épico - "Cazador de Dragones"
+(9, 3), -- Épico - "Maestría de Nivel"
+(10, 4), -- Legendario - "Legendario"
+(11, 4), -- Legendario - "Veterano"
+(12, 1), -- Común - "Consumista"
+(13, 2), -- Raro - "Asistente a Eventos"
+(14, 2), -- Raro - "Explorador de Regiones"
+(15, 3), -- Épico - "Maestro Artesano"
+(16, 3), -- Épico - "Ganador de Duelos"
+(17, 4), -- Legendario - "Inmortal"
+(18, 4), -- Legendario - "Caminante Dimensional"
+(19, 1), -- Común - "Miembro Activo"
+(20, 2); -- Raro - "Comprador Frecuente
 
--- 2. clase
-INSERT INTO `clase` VALUES (1,'Guerrero enfocado en el combate cuerpo a cuerpo.','Fuerza, Vitalidad'),(2,'Mago especializado en hechizos ofensivos.','Intelecto, Maná'),(3,'Pícaro ágil, experto en evasión y golpes críticos.','Agilidad, Suerte'),(4,'Sanador de apoyo con hechizos de protección.','Espíritu, Resistencia');
+-- --- Habilidades ---
+-- Habilidad 4 (Golpe Sorpresa) es crítica para los Asesinos y debe existir.
+INSERT IGNORE INTO `habilidades` (`id_habilidades`, `nombre`, `descripcion`, `rango`, `nivel`, `fk_tipo`, `fk_clase`) VALUES
+(4, 'Golpe Sorpresa', 'Ataque rápido de sigilo con alto crítico.', 2, 1, 4, 3);
 
--- 3. pais
-INSERT INTO `pais` VALUES (1,'España'),(2,'México'),(3,'Argentina'),(4,'Colombia');
 
--- 4. evento
-INSERT INTO `evento` VALUES (1,'Festival de la Cosecha','2025-11-20','2025-11-30','Doble de Oro','Evento anual con misiones y recompensas especiales.'),(2,'Invasión de Goblins','2025-12-05','2025-12-15','Drop de materiales raros','Los Goblins atacan las Praderas de Inicio.');
+-- --------------------------------------------------------------------
+-- PASO 2: INSERCIÓN DE ENTIDADES PRINCIPALES (x2 Volumen)
+-- --------------------------------------------------------------------
 
--- 5. gremio
-INSERT INTO `gremio` VALUES (1,'Los Dragones Rojos','2025-01-15',500),(2,'La Hermandad de Acero','2025-05-20',1200);
+-- Nuevos Jugadores (Asegurando IDs 1-3 y añadiendo 4-36)
+INSERT IGNORE INTO `jugador` (`id_jugador`, `nombre`, `fecha_registro`, `horas_jugadas`, `fk_pais`) VALUES
+(1,'Alice','2025-10-01',153,1), (2,'Bob','2025-10-05',200,2), (3,'Charlie','2025-11-10',50,3),
+(4,'David', '2025-10-15', 300, 1),    -- ID 4
+(5,'Elena', '2025-09-20', 50, 4),     -- ID 5
+(6,'Felipe', '2025-11-01', 10, 3),    -- ID 6
+(7,'Gabriela', '2025-10-25', 180, 2), -- ID 7
+(8,'Hector', '2025-12-01', 5, 1),     -- ID 8
+(9,'Isaac', '2025-07-01', 500, 1),    -- ID 9
+(10,'Julieta', '2025-11-15', 90, 2),   -- ID 10
+(11,'Kevin', '2025-10-01', 250, 3),    -- ID 11
+(12,'Laura', '2025-08-20', 350, 4),    -- ID 12
+(13,'Miguel', '2025-09-10', 120, 1),   -- ID 13
+(14,'Nora', '2025-12-05', 5, 2),       -- ID 14
+(15,'Oscar', '2025-06-25', 600, 3),    -- ID 15
+(16,'Paula', '2025-11-20', 45, 4),     -- ID 16
+(17,'Quentin', '2025-07-10', 410, 1),  -- ID 17
+(18,'Rita', '2025-09-01', 190, 2),     -- ID 18
+(19,'Samuel', '2025-05-15', 700, 3),  -- ID 19
+(20,'Teresa', '2025-10-01', 150, 4), -- ID 20
+(21,'Ulises', '2025-09-01', 450, 1), -- ID 21
+(22,'Vanesa', '2025-11-25', 20, 2),  -- ID 22
+(23,'Walter', '2025-08-10', 550, 3), -- ID 23
+(24,'Ximena', '2025-07-05', 480, 4), -- ID 24
+(25,'Yago', '2025-10-20', 100, 1),   -- ID 25
+(26,'Zara', '2025-06-15', 800, 2),   -- ID 26
+(27,'Andrés', '2025-12-01', 12, 3),  -- ID 27
+(28,'Bea', '2025-05-20', 650, 4),    -- ID 28
+(29,'Camilo', '2025-09-15', 220, 1), -- ID 29
+(30,'Diana', '2025-11-05', 80, 2),   -- ID 30
+(31,'Erik', '2025-08-01', 310, 3),   -- ID 31
+(32,'Flor', '2025-10-10', 160, 4),   -- ID 32
+(33,'Gael', '2025-07-25', 400, 1),   -- ID 33
+(34,'Hilda', '2025-12-05', 8, 2),    -- ID 34
+(35,'Ivan', '2025-06-01', 750, 3),   -- ID 35
+(36,'Jana', '2025-11-10', 70, 4);    -- ID 36
 
--- 6. rango_enemigos
-INSERT INTO `rango_enemigos` VALUES (1,'Normal',1,1),(2,'Elite',1.5,1.5),(3,'Jefe',3,2.5);
+-- --- Gremios Iniciales (Asegurando IDs 1 y 2) ---
+INSERT IGNORE INTO `gremio` (`id_gremio`, `nombre`, `fecha_creación`, `trofeos`) VALUES
+(1,'Los Dragones Rojos','2025-01-15',500),
+(2,'La Hermandad de Acero','2025-05-20',1200);
 
--- 7. rango_gremio
-INSERT INTO `rango_gremio` VALUES (1,'Miembro'),(2,'Oficial'),(3,'Líder');
+-- Nuevos Gremios (Añadiendo IDs 3 a 8)
+INSERT INTO `gremio` (`nombre`, `fecha_creación`, `trofeos`) VALUES
+('Los Lobos Solitarios', '2025-11-01', 100),            -- ID 3
+('La Magia Oscura', '2025-08-10', 800),                 -- ID 4
+('Los Guardianes de la Luz', '2025-03-01', 2500),       -- ID 5
+('Los Mercenarios de Plata', '2025-07-12', 400),        -- ID 6
+('El Círculo Arcano', '2025-04-20', 1800),             -- ID 7
+('Forajidos del Páramo', '2025-11-05', 50);             -- ID 8
 
--- 8. rareza
-INSERT INTO `rareza` VALUES (1,'Común'),(2,'Raro'),(3,'Épico'),(4,'Legendario');
+-- Nuevos Personajes (Asegurando IDs 1-3 y añadiendo 4-36)
+INSERT IGNORE INTO `personaje` (`id_personaje`, `nombre`, `nivel`, `vida`, `mana`, `fk_jugador`, `fk_clase`, `fk_base_stats`, `horas`, `oro`, `enemigos_derrotados`) VALUES
+(1,'Aric el Guerrero',10,800,50,1,1,1,3,500,0), (2,'Magus Bob',12,450,250,2,2,3,0,200,0), (3,'Charly Ágil',5,600,100,3,3,4,0,100,0),
+(4,'Dravin el Asesino', 25, 750, 150, 4, 3, 5, 20, 1200, 150),    -- ID 4: Stats 5
+(5,'Erica la Curandera', 8, 550, 300, 5, 4, 7, 50, 350, 25),      -- ID 5: Stats 7
+(6,'Felipón el Mago', 5, 400, 200, 6, 2, 3, 10, 80, 10),          -- ID 6: Stats 3
+(7,'Gabi la Guerrera', 40, 1200, 80, 7, 1, 6, 180, 5000, 500),   -- ID 7: Stats 6
+(8,'Héctor Balanceado', 15, 650, 120, 8, 1, 5, 5, 600, 5),        -- ID 8: Stats 5
+(9,'Tanky Isaac', 60, 1800, 50, 9, 1, 8, 500, 15000, 1500),      -- ID 9: Stats 8
+(10,'Healer Ju', 45, 900, 400, 10, 4, 7, 90, 500, 300),           -- ID 10: Stats 7
+(11,'Mago Ken', 70, 600, 550, 11, 2, 3, 250, 20000, 2500),         -- ID 11: Stats 3
+(12,'Asesina Lau', 55, 1000, 100, 12, 3, 9, 350, 8000, 1800),      -- ID 12: Stats 9
+(13,'Híbrido Mig', 35, 850, 150, 13, 1, 10, 120, 4000, 800),      -- ID 13: Stats 10
+(14,'Maga Novata', 1, 300, 150, 14, 2, 3, 5, 50, 2),               -- ID 14: Stats 3
+(15,'Líder Osc', 80, 1500, 200, 15, 3, 5, 600, 30000, 5000),      -- ID 15: Stats 5
+(16,'Paula Sana', 20, 700, 350, 16, 4, 7, 45, 700, 150),           -- ID 16: Stats 7
+(17,'Guerrero Q', 40, 1100, 60, 17, 1, 6, 410, 9000, 1200),       -- ID 17: Stats 6
+(18,'Rita Rapida', 18, 550, 100, 18, 3, 9, 190, 1500, 500),        -- ID 18: Stats 9
+(19,'Sam el Tanque', 75, 2000, 80, 19, 1, 12, 700, 40000, 3500),  -- ID 19: Stats 12
+(20,'Teresa Arca', 65, 500, 600, 20, 2, 15, 150, 15000, 2000),   -- ID 20: Stats 15
+(21,'Ulises Rápido', 30, 700, 120, 21, 3, 14, 450, 5000, 900),   -- ID 21: Stats 14
+(22,'Vanesa Pálida', 10, 400, 250, 22, 4, 7, 20, 300, 10),       -- ID 22: Stats 7
+(23,'Walter Equi', 50, 1000, 100, 23, 1, 16, 550, 12000, 1500),  -- ID 23: Stats 16
+(24,'Ximena Defen', 45, 1500, 90, 24, 4, 18, 480, 7000, 1100),   -- ID 24: Stats 18
+(25,'Yago Mágico', 22, 450, 300, 25, 2, 17, 100, 2500, 400),     -- ID 25: Stats 17
+(26,'Zara Épica', 99, 2500, 400, 26, 3, 19, 800, 50000, 8000),   -- ID 26: Stats 19
+(27,'Andrés Novato', 3, 500, 100, 27, 1, 1, 12, 50, 5),          -- ID 27: Stats 1
+(28,'Bea la Sabia', 85, 1600, 500, 28, 2, 3, 650, 35000, 4000),   -- ID 28: Stats 3
+(29,'Camilo Furia', 55, 1300, 60, 29, 1, 6, 220, 9000, 1600),    -- ID 29: Stats 6
+(30,'Diana Sneak', 28, 650, 150, 30, 3, 9, 80, 1800, 450),       -- ID 30: Stats 9
+(31,'Erik el Duro', 40, 1100, 70, 31, 1, 12, 310, 6000, 1000),   -- ID 31: Stats 12
+(32,'Flor Curativa', 50, 1000, 400, 32, 4, 7, 160, 4500, 800),   -- ID 32: Stats 7
+(33,'Gael Veloz', 70, 1200, 180, 33, 3, 14, 400, 18000, 3000),   -- ID 33: Stats 14
+(34,'Hilda Mágica', 15, 350, 200, 34, 2, 15, 8, 200, 20),        -- ID 34: Stats 15
+(35,'Ivan el Veterano', 90, 2200, 100, 35, 1, 19, 750, 60000, 5500), -- ID 35: Stats 19
+(36,'Jana Sombra', 40, 800, 120, 36, 3, 9, 70, 3000, 950);       -- ID 36: Stats 9
 
--- 9. region
-INSERT INTO `region` VALUES (1,'Praderas de Inicio',1),(2,'Bosque Oscuro',10),(3,'Montañas de Fuego',30);
+-- Nuevos Enemigos (IDs 13 a 24) - 12 nuevos
+INSERT INTO `enemigo` (`nombre`, `nivel`, `fk_region`, `fk_rango`, `fk_base_stats`, `vida`, `vida_base`, `jugadores_derrotados`) VALUES
+('Araña Gigante', 15, 2, 1, 9, 450, 450, 20),        -- ID 13: Stats 9
+('Banshee', 45, 2, 2, 15, 1200, 1000, 15),          -- ID 14: Stats 15
+('Troll de Montaña', 70, 3, 3, 12, 4000, 4000, 5),   -- ID 15: Stats 12
+('Bandido Novato', 1, 1, 1, 11, 70, 70, 30),         -- ID 16: Stats 11
+('Sacerdote Oscuro', 60, 3, 2, 10, 1500, 1200, 4),  -- ID 17: Stats 10
+('Cíclope', 80, 3, 3, 6, 4500, 4500, 1),           -- ID 18: Stats 6
+('Murciélago', 5, 1, 1, 14, 150, 150, 50),          -- ID 19: Stats 14
+('Guerrero No Muerto', 30, 2, 2, 16, 900, 700, 8),  -- ID 20: Stats 16
+('Guardia Traidor', 40, 2, 2, 17, 1100, 900, 6),    -- ID 21: Stats 17
+('Jefe Goblin', 10, 1, 2, 6, 500, 500, 10),         -- ID 22: Stats 6
+('Fantasma', 50, 2, 2, 7, 1000, 1000, 12),          -- ID 23: Stats 7
+('Demonio del Abismo', 100, 3, 3, 13, 8000, 8000, 0); -- ID 24: Stats 13
 
--- 10. tipo
-INSERT INTO `tipo` VALUES (1,'Arma'),(2,'Armadura'),(3,'Poción'),(4,'Material');
+-- CONSOLIDACIÓN DE MISIONES (Asegurando IDs 1 a 14)
+INSERT IGNORE INTO `mision` (`id_mision`, `titulo`, `tipo`, `nivel_recomendad`, `fk_npc`, `aceptada`) VALUES
+(1,'Recolección de Bayas','Recolección',1,1,0),
+(2,'Eliminar Goblins','Combate',10,2,0),
+(3,'Derrota al Ogro', 'Combate', 25, 2, 1),
+(4,'Entrega de pociones', 'Entrega', 5, 1, 1),
+(5,'Investigación en la Cueva', 'Exploración', 35, 2, 0),
+(6,'Caza del Gigante', 'Combate', 60, 2, 0),
+(7,'Entrega al Campamento', 'Entrega', 5, 1, 1),
+(8,'Rastrea la Bruja', 'Exploración', 50, 2, 1),
+(9,'Eliminar Slimes', 'Combate', 1, 1, 1),
+(10,'Exterminio de Arañas', 'Combate', 20, 2, 1),
+(11,'Recuperar el Ídolo', 'Exploración', 55, 2, 0),
+(12,'Vigilancia Nocturna', 'Entrega', 40, 1, 1),
+(13,'La Prueba del Cíclope', 'Combate', 80, 2, 0),
+(14,'Caza del Demonios', 'Combate', 99, 2, 0);
 
--- 11. tipo_habilidad
-INSERT INTO `tipo_habilidad` VALUES (1,'Cuerpo a Cuerpo',10,1),(2,'Hechizo de Fuego',15,5),(3,'Hechizo de Curación',0,4),(4,'Ataque Rápido',8,2);
+-- CONSOLIDACIÓN DE OBJETOS (Asegurando IDs 1 a 22)
+INSERT IGNORE INTO `objeto` (`id_objeto`, `nombre`, `nivel_requerido`, `precio`, `efecto`, `fk_tipo`, `fk_rareza`, `fk_fuente`, `fk_idmercado`) VALUES
+(1,'Espada de Hierro', 1, 10.5, 'Ataque +5', 1, 1, 2, 1),
+(2,'Poción de Vida', 1, 5, 'Restaura 100 Vida', 3, 1, 2, 1),
+(3,'Armadura Épica', 20, 500, 'Defensa +50', 2, 3, 3, NULL),
+(4,'Fragmento Mágico', 5, 2, 'Material de crafteo', 4, 2, 1, 1),
+(5,'Báculo de Arcángel', 30, 2500, 'Magia +100', 1, 4, 3, NULL),
+(6,'Botas de Cuero', 1, 8.99, 'Velocidad +2', 2, 1, 2, 1),
+(7,'Elixir de Maná', 10, 15, 'Restaura 200 Maná', 3, 2, 2, 1),
+(8,'Anillo de Resistencia', 15, 50, 'Defensa +10', 2, 1, 2, 1),
+(9,'Amuleto Rúnico', 30, 300, 'Magia +20, Mana +50', 2, 2, 3, NULL),
+(10,'Elixir Superior de Vida', 40, 100, 'Restaura 500 Vida', 3, 3, 4, 1),
+(11,'Escama de Dragón', 50, 500, 'Material Épico de Crafteo', 4, 3, 1, NULL),
+(12,'Daga de las Sombras', 45, 1500, 'Ataque +40, Crítico +5%', 1, 4, 3, NULL),
+(13,'Palo de Madera', 1, 0.5, 'Arma de inicio.', 1, 1, 2, 1),
+(14,'Peto de Troll', 70, 3500, 'Defensa +120', 2, 4, 3, NULL),      -- ID 14 - Legendario
+(15,'Cristal Arcano', 50, 70, 'Material Raro', 4, 2, 1, 1),       -- ID 15 - Raro
+(16,'Capa de Sigilo', 40, 450, 'Velocidad +10', 2, 3, 3, NULL),     -- ID 16 - Épico
+(17,'Elixir de Berserker', 60, 200, 'Ataque +50, Defensa -20', 3, 3, 4, 1), -- ID 17 - Épico
+(18,'Llave de la Prisión', 1, 0, 'Abre la jaula.', 4, 1, 3, NULL),   -- ID 18 - Común
+(19,'Guantes de Titán', 90, 8000, 'Ataque +150', 1, 4, 3, NULL),   -- ID 19 - Legendario
+(20,'Gema de Fuego', 25, 45, 'Componente de magia', 4, 2, 1, 1),    -- ID 20 - Raro
+(21,'Espada Larga', 5, 25.5, 'Ataque +10', 1, 1, 2, 1),             -- ID 21 - Común
+(22,'Poción de Maná', 1, 6.5, 'Restaura 100 Maná', 3, 1, 2, 1);     -- ID 22 - Común
 
----
+-- --------------------------------------------------------------------
+-- PASO 3: INSERCIÓN DE TABLAS DE RELACIÓN Y ACTIVIDAD (Volumen Masivo)
+-- --------------------------------------------------------------------
 
--- ** Tablas que dependen de las anteriores **
+-- Nuevos Miembros de Gremio (Añadiendo 18 más a los 21 existentes = 39)
+INSERT INTO `miembro_gremio` (`fecha_ingreso`, `rango`, `fk_personaje`, `fk_gremio`, `fk_rango_gremio`) VALUES
+('2025-05-20', 'Líder', 26, 8, 3),   -- Zara en Forajidos del Páramo
+('2025-05-15', 'Miembro', 19, 5, 1), -- Sam en Guardianes de la Luz
+('2025-10-02', 'Miembro', 20, 6, 1),
+('2025-09-03', 'Oficial', 21, 1, 2),
+('2025-11-26', 'Miembro', 22, 2, 1),
+('2025-08-15', 'Oficial', 23, 7, 2),
+('2025-07-10', 'Miembro', 24, 4, 1),
+('2025-10-25', 'Miembro', 25, 3, 1),
+('2025-12-05', 'Miembro', 27, 1, 1),
+('2025-06-01', 'Líder', 28, 5, 3),
+('2025-09-20', 'Miembro', 29, 6, 1),
+('2025-11-10', 'Miembro', 30, 7, 1),
+('2025-08-05', 'Miembro', 31, 8, 1),
+('2025-10-15', 'Miembro', 32, 1, 1),
+('2025-07-30', 'Oficial', 33, 2, 2),
+('2025-12-10', 'Miembro', 34, 3, 1),
+('2025-06-05', 'Líder', 35, 4, 3),
+('2025-11-15', 'Miembro', 36, 5, 1);
 
--- 12. jugador (Depende de pais)
-INSERT INTO `jugador` VALUES (1,'Alice','2025-10-01',150,1),(2,'Bob','2025-10-05',200,2),(3,'Charlie','2025-11-10',50,3);
+-- Misiones Completadas (50 registros, más del doble)
+-- Aumentamos el AUTO_INCREMENT para no chocar con las claves primarias compuestas existentes.
+-- Aunque la PK es compuesta, el error se produce al intentar añadir un duplicado (Misión-Personaje).
+INSERT INTO `mision_completada` (`fk_mision`, `fk_personaje`, `fecha`, `tiempo_empleado`) VALUES
+(3, 4, '2025-12-01', '00:08:30'), (5, 4, '2025-11-25', '00:55:00'),
+(3, 5, '2025-12-02', '00:30:00'), (4, 6, '2025-12-02', '00:05:00'),
+(4, 7, '2025-12-02', '00:07:00'), (5, 7, '2025-12-02', '01:30:00'),
+(1, 9, '2025-11-01', '00:05:00'), (2, 9, '2025-11-02', '00:40:00'),
+(3, 11, '2025-12-03', '00:15:00'), (4, 12, '2025-12-03', '00:03:00'),
+(5, 15, '2025-12-01', '00:50:00'), (6, 9, '2025-12-05', '01:30:00'),
+(6, 17, '2025-12-06', '01:25:00'), (7, 10, '2025-12-07', '00:04:00'),
+(7, 16, '2025-12-07', '00:03:30'), (8, 11, '2025-12-08', '00:40:00'),
+(8, 12, '2025-12-08', '00:35:00'), (9, 14, '2025-12-09', '00:01:00'),
+(9, 6, '2025-12-09', '00:01:30'), (9, 8, '2025-12-10', '00:01:10'),
+(5, 1, '2025-12-10', '01:00:00'), (3, 2, '2025-12-11', '00:20:00'),
+(4, 3, '2025-12-11', '00:05:00'), (5, 17, '2025-12-12', '01:15:00'),
+(2, 18, '2025-12-12', '00:35:00'), (1, 15, '2025-12-13', '00:06:00'),
+(1, 18, '2025-12-14', '00:07:00'),
 
--- 13. personaje (Depende de jugador, clase, base_stats)
-INSERT INTO `personaje` VALUES (1,'Aric el Guerrero',10,800,50,1,1,1),(2,'Magus Bob',12,450,250,2,2,3),(3,'Charly Ágil',5,600,100,3,3,4);
+-- Nuevas entradas únicas (50 totales)
+(10, 21, '2025-12-15', '00:18:00'), -- Exterminio de Arañas (ID 10)
+(10, 23, '2025-12-16', '00:25:00'),
+(11, 26, '2025-12-17', '01:45:00'), -- Recuperar el Ídolo (ID 11)
+(12, 20, '2025-12-18', '00:09:00'), -- Vigilancia Nocturna (ID 12)
+(12, 31, '2025-12-19', '00:11:00'),
+(13, 15, '2025-12-20', '02:05:00'), -- Prueba del Cíclope (ID 13)
+(14, 35, '2025-12-21', '03:10:00'), -- Caza de Demonios (ID 14)
+(1, 19, '2025-12-22', '00:04:30'),
+(2, 28, '2025-12-23', '00:38:00'),
+(3, 29, '2025-12-24', '00:12:30'),
+(4, 30, '2025-12-25', '00:06:00'),
+(5, 33, '2025-12-26', '01:05:00'),
+(6, 26, '2025-12-27', '01:20:00'),
+(7, 34, '2025-12-28', '00:05:30'),
+(8, 28, '2025-12-29', '00:45:00'),
+(9, 27, '2025-12-30', '00:01:20'),
+(10, 36, '2025-12-31', '00:15:00'),
+(11, 23, '2026-01-01', '01:50:00'),
+(12, 22, '2026-01-02', '00:10:00'),
+(13, 19, '2026-01-03', '02:15:00'),
+(14, 26, '2026-01-04', '03:00:00'),
+(1, 35, '2026-01-05', '00:05:00'),
+(2, 24, '2026-01-06', '00:42:00');
 
--- 14. enemigo (Depende de region, rango_enemigos, base_stats)
-INSERT INTO `enemigo` VALUES (1,'Lobo Joven',2,1,1,4,500,500),(2,'Golem de Piedra',15,2,2,2,500,1000),(3,'Dragón de Fuego',50,3,3,1,2500,2500);
 
--- 15. habilidades (Depende de tipo_habilidad, clase)
-INSERT INTO `habilidades` VALUES (1,'Corte Poderoso','Ataque cuerpo a cuerpo potente.',1,1,1,1),(2,'Bola de Fuego','Lanza un proyectil mágico de fuego.',5,5,2,2),(3,'Curación Menor','Restaura una pequeña cantidad de salud.',4,1,3,4);
+-- Logros Obtenidos (70 registros, más del doble)
+INSERT INTO `logro_has_personaje` (`fk_logro`, `fk_personaje`, `fecha`) VALUES
+(4, 1, '2025-11-01 08:00:00'), (4, 2, '2025-11-01 09:00:00'), (4, 3, '2025-11-02 10:00:00'),
+(4, 4, '2025-11-02 11:00:00'), (4, 5, '2025-11-03 12:00:00'), (4, 6, '2025-11-03 13:00:00'),
+(4, 7, '2025-11-04 14:00:00'), (4, 8, '2025-11-04 15:00:00'), (4, 9, '2025-11-05 16:00:00'),
+(4, 10, '2025-11-05 17:00:00'), (4, 11, '2025-11-06 18:00:00'), (4, 12, '2025-11-06 19:00:00'),
+(5, 9, '2025-11-10 20:00:00'), (5, 15, '2025-11-15 21:00:00'), (5, 17, '2025-11-20 22:00:00'),
+(6, 9, '2025-11-25 23:00:00'), (6, 12, '2025-11-26 00:00:00'), (6, 15, '2025-11-27 01:00:00'),
+(7, 1, '2025-10-02 02:00:00'), (7, 10, '2025-11-18 03:00:00'), (7, 12, '2025-08-25 04:00:00'),
+(8, 11, '2025-12-01 11:00:00'), (8, 9, '2025-12-22 14:00:00'),
+(9, 11, '2025-12-05 15:00:00'), (9, 15, '2025-12-10 16:00:00'),
+(10, 15, '2025-12-07 17:00:00'), (10, 1, '2025-12-11 20:00:00'),
+(11, 15, '2025-12-15 18:00:00'), (11, 9, '2025-12-20 19:00:00'),
+(12, 11, '2025-12-03 12:00:00'), (12, 17, '2025-12-09 18:00:00'), (12, 1, '2025-12-11 20:00:00'),
+(13, 11, '2025-12-11 21:00:00'), (13, 17, '2025-12-12 22:00:00'),
+(1, 5, '2025-11-15 23:00:00'), (2, 7, '2025-12-01 00:00:00'), (3, 12, '2025-12-02 01:00:00'),
 
--- 16. npc (Depende de region)
-INSERT INTO `npc` VALUES (1,'Mercader Tom','Bienvenido, ¿qué deseas comprar?',1),(2,'Líder de la Guardia','Necesito ayuda en el Bosque Oscuro.',2);
+-- Nuevos logros para nuevos personajes
+(4, 19, '2025-06-01 10:00:00'), (4, 20, '2025-10-05 11:00:00'), (4, 21, '2025-09-02 12:00:00'),
+(4, 26, '2025-07-10 13:00:00'), (4, 35, '2025-06-05 14:00:00'), (5, 26, '2025-07-20 15:00:00'),
+(5, 33, '2025-08-10 16:00:00'), (6, 23, '2025-09-01 17:00:00'), (6, 29, '2025-10-01 18:00:00'),
+(7, 26, '2025-12-01 19:00:00'), (7, 35, '2025-12-05 20:00:00'), (8, 28, '2025-12-29 21:00:00'),
+(9, 23, '2025-12-30 22:00:00'), (9, 31, '2025-12-31 23:00:00'), (10, 26, '2026-01-01 00:00:00'),
+(10, 35, '2026-01-02 01:00:00'), (11, 28, '2026-01-03 02:00:00'), (11, 33, '2026-01-04 03:00:00'),
+(14, 21, '2025-12-15 04:00:00'), (14, 30, '2025-12-20 05:00:00'), (15, 29, '2025-12-25 06:00:00'),
+(16, 23, '2025-12-26 07:00:00'), (17, 26, '2026-01-05 08:00:00'), (17, 35, '2026-01-06 09:00:00'),
+(18, 26, '2026-01-07 10:00:00'), (18, 35, '2026-01-08 11:00:00'), (19, 27, '2025-12-03 12:00:00'),
+(19, 34, '2025-12-10 13:00:00'), (20, 25, '2025-12-06 14:00:00'), (20, 32, '2025-12-18 15:00:00');
 
--- 17. logro (Depende de rareza)
-INSERT INTO `logro` VALUES (1,1),(2,2),(3,3);
 
--- 18. miembro_gremio (Depende de personaje, gremio, rango_gremio)
-INSERT INTO `miembro_gremio` VALUES (1,'2025-10-02','Líder',1,1,3),(2,'2025-10-06','Miembro',2,1,1),(3,'2025-11-12','Oficial',3,2,2);
+-- Objetos Obtenidos (70 registros, más del doble)
+-- Reiniciando el auto_increment para continuar después del 4 inicial
+ALTER TABLE `objeto_obtenido` AUTO_INCREMENT = 5;
+INSERT INTO `objeto_obtenido` (`fk_objeto`, `fk_personaje`, `fecha`) VALUES
+(5, 9, '2025-12-05 10:00:00'), (5, 11, '2025-12-06 11:00:00'), (5, 12, '2025-12-07 12:00:00'),
+(6, 10, '2025-12-05 13:00:00'), (6, 13, '2025-12-06 14:00:00'), (6, 14, '2025-12-07 15:00:00'),
+(7, 15, '2025-12-05 16:00:00'), (7, 16, '2025-12-06 17:00:00'), (7, 17, '2025-12-07 18:00:00'),
+(4, 9, '2025-12-01 10:00:00'), (4, 10, '2025-12-02 11:00:00'), (4, 11, '2025-12-03 12:00:00'),
+(8, 12, '2025-12-04 13:00:00'), (8, 13, '2025-12-05 14:00:00'), (8, 14, '2025-12-06 15:00:00'),
+(9, 15, '2025-12-07 16:00:00'), (9, 16, '2025-12-08 17:00:00'), (9, 17, '2025-12-09 18:00:00'),
+(10, 18, '2025-12-10 19:00:00'), (10, 1, '2025-12-11 20:00:00'), (10, 2, '2025-12-12 21:00:00'),
+(11, 3, '2025-12-13 22:00:00'), (11, 4, '2025-12-14 23:00:00'), (11, 5, '2025-12-15 00:00:00'),
+(12, 6, '2025-12-16 01:00:00'), (12, 7, '2025-12-17 02:00:00'), (12, 8, '2025-12-18 03:00:00'),
+(13, 9, '2025-12-19 04:00:00'), (13, 10, '2025-12-20 05:00:00'), (13, 11, '2025-12-21 06:00:00'),
+(1, 10, '2025-12-22 07:00:00'), (2, 10, '2025-12-23 08:00:00'), (1, 12, '2025-12-24 09:00:00'),
+(2, 12, '2025-12-25 10:00:00'), (3, 13, '2025-12-26 11:00:00'), (4, 14, '2025-12-27 12:00:00'),
+(5, 15, '2025-12-28 13:00:00'), (6, 16, '2025-12-29 14:00:00'), (7, 17, '2025-12-30 15:00:00'),
+(8, 18, '2025-12-31 16:00:00'), (9, 1, '2026-01-01 17:00:00'), (10, 2, '2026-01-02 18:00:00'),
+(11, 3, '2026-01-03 19:00:00'), (12, 4, '2026-01-04 20:00:00'), (13, 5, '2026-01-05 21:00:00'),
 
--- 19. mision (Depende de npc)
-INSERT INTO `mision` VALUES (1,'Recolección de Bayas','Recolección',1,1),(2,'Eliminar Goblins','Combate',10,2);
+-- Nuevas entradas para los nuevos personajes
+(5, 19, '2026-01-06 10:00:00'), (6, 20, '2026-01-07 11:00:00'), (7, 21, '2026-01-08 12:00:00'),
+(8, 22, '2026-01-09 13:00:00'), (9, 23, '2026-01-10 14:00:00'), (10, 24, '2026-01-11 15:00:00'),
+(11, 25, '2026-01-12 16:00:00'), (12, 26, '2026-01-13 17:00:00'), (13, 27, '2026-01-14 18:00:00'),
+(14, 15, '2026-01-15 19:00:00'), (15, 28, '2026-01-16 20:00:00'), (16, 29, '2026-01-17 21:00:00'),
+(17, 30, '2026-01-18 22:00:00'), (18, 31, '2026-01-19 23:00:00'), (19, 32, '2026-01-20 00:00:00'),
+(20, 33, '2026-01-21 01:00:00'), (21, 34, '2026-01-22 02:00:00'), (22, 35, '2026-01-23 03:00:00'),
+(1, 36, '2026-01-24 04:00:00'), (19, 26, '2026-01-25 05:00:00'), (19, 35, '2026-01-26 06:00:00'),
+(19, 28, '2026-01-27 07:00:00'), (19, 33, '2026-01-28 08:00:00');
 
--- 20. mercado (Depende de npc)
-INSERT INTO `mercado` VALUES (1,1);
 
--- 21. fuente (Depende de enemigo)
-INSERT INTO `fuente` VALUES (1,'Dropeado por dragon',3),(2,'Venta en Mercado',NULL),(3,'Recompensa de Misión',NULL),(4,'Evento Especial',NULL);
+-- Combates Registrados (100 registros totales, más del doble)
+-- Reiniciando el auto_increment para continuar después del 8 inicial
+ALTER TABLE `combate` AUTO_INCREMENT = 9;
+INSERT INTO `combate` (`id_personaje`, `id_enemigo`, `fecha`, `fk_habilidades`, `daño`, `ataque_enemigo`) VALUES
+-- 34 Entradas anteriores
+(4, 3, '2025-12-01 15:30:00', 1, 800, 0), (7, 5, '2025-12-01 16:00:00', 1, 300, 0),
+(2, 4, '2025-12-01 17:00:00', 2, 150, 0), (5, 1, '2025-12-02 08:00:00', 3, 50, 0),
+(7, 6, '2025-12-02 10:00:00', 1, 550, 0), (1, 3, '2025-12-02 11:30:00', 1, 1500, 0),
+(9, 6, '2025-12-01 10:00:00', 1, 1200, 0), (11, 3, '2025-12-01 11:00:00', 2, 4500, 0),
+(12, 5, '2025-12-01 12:00:00', 4, 900, 0), (15, 8, '2025-12-01 13:00:00', 4, 150, 0),
+(17, 9, '2025-12-01 14:00:00', 1, 250, 0), (18, 10, '2025-12-01 15:00:00', 4, 1000, 0),
+(10, 1, '2025-12-02 16:00:00', 3, 75, 0), (16, 1, '2025-12-02 17:00:00', 3, 80, 0),
+(13, 11, '2025-12-03 18:00:00', 1, 10, 0), (14, 11, '2025-12-03 19:00:00', 2, 20, 0),
+(9, 7, '2025-12-04 20:00:00', 1, 500, 0), (11, 7, '2025-12-05 21:00:00', 2, 400, 0),
+(12, 8, '2025-12-06 22:00:00', 4, 1200, 0), (15, 10, '2025-12-07 23:00:00', 4, 1800, 0),
+(17, 12, '2025-12-08 00:00:00', 1, 300, 0), (18, 12, '2025-12-09 01:00:00', 4, 250, 0),
+(1, 10, '2025-12-10 02:00:00', 1, 950, 0), (2, 6, '2025-12-11 03:00:00', 2, 120, 0),
+(3, 4, '2025-12-12 04:00:00', 4, 20, 0), (4, 5, '2025-12-13 05:00:00', 1, 600, 0),
+(1, 12, '2025-12-14 06:00:00', 1, 1000, 0), (2, 9, '2025-12-15 07:00:00', 2, 250, 0),
+(3, 7, '2025-12-16 08:00:00', 4, 300, 0), (4, 8, '2025-12-17 09:00:00', 1, 400, 0),
+(5, 9, '2025-12-18 10:00:00', 3, 50, 0), (6, 10, '2025-12-19 11:00:00', 2, 50, 0),
 
----
+-- 66 Nuevas entradas
+(19, 15, '2025-12-20 12:00:00', 1, 2500, 0), (20, 18, '2025-12-21 13:00:00', 2, 800, 0),
+(21, 13, '2025-12-22 14:00:00', 4, 350, 0), (22, 16, '2025-12-23 15:00:00', 3, 100, 0),
+(23, 19, '2025-12-24 16:00:00', 1, 600, 0), (24, 20, '2025-12-25 17:00:00', 3, 120, 0),
+(25, 21, '2025-12-26 18:00:00', 2, 450, 0), (26, 22, '2025-12-27 19:00:00', 4, 2000, 0),
+(27, 24, '2025-12-28 20:00:00', 1, 50, 0), (28, 14, '2025-12-29 21:00:00', 2, 1100, 0),
+(29, 15, '2025-12-30 22:00:00', 1, 1800, 0), (30, 17, '2025-12-31 23:00:00', 4, 400, 0),
+(31, 18, '2026-01-01 00:00:00', 1, 750, 0), (32, 19, '2026-01-02 01:00:00', 3, 90, 0),
+(33, 20, '2026-01-03 02:00:00', 4, 1500, 0), (34, 21, '2026-01-04 03:00:00', 2, 500, 0),
+(35, 22, '2026-01-05 04:00:00', 1, 3000, 0), (36, 24, '2026-01-06 05:00:00', 4, 850, 0),
+(19, 24, '2026-01-07 06:00:00', 1, 2800, 0), (20, 13, '2026-01-08 07:00:00', 2, 950, 0),
+(21, 16, '2026-01-09 08:00:00', 4, 420, 0), (22, 17, '2026-01-10 09:00:00', 3, 110, 0),
+(23, 20, '2026-01-11 10:00:00', 1, 650, 0), (24, 21, '2026-01-12 11:00:00', 3, 130, 0),
+(25, 22, '2026-01-13 12:00:00', 2, 550, 0), (26, 24, '2026-01-14 13:00:00', 4, 2200, 0),
+(27, 13, '2026-01-15 14:00:00', 1, 60, 0), (28, 16, '2026-01-16 15:00:00', 2, 1250, 0),
+(29, 17, '2026-01-17 16:00:00', 1, 1950, 0), (30, 18, '2026-01-18 17:00:00', 4, 450, 0),
+(31, 19, '2026-01-19 18:00:00', 1, 800, 0), (32, 20, '2026-01-20 19:00:00', 3, 100, 0),
+(33, 21, '2026-01-21 20:00:00', 4, 1600, 0), (34, 22, '2026-01-22 21:00:00', 2, 550, 0),
+(35, 24, '2026-01-23 22:00:00', 1, 3200, 0), (36, 13, '2026-01-24 23:00:00', 4, 900, 0),
+(19, 18, '2026-01-25 00:00:00', 1, 2600, 0), (20, 15, '2026-01-26 01:00:00', 2, 850, 0),
+(21, 14, '2026-01-27 02:00:00', 4, 380, 0), (22, 16, '2026-01-28 03:00:00', 3, 105, 0),
+(23, 17, '2026-01-29 04:00:00', 1, 620, 0), (24, 18, '2026-01-30 05:00:00', 3, 125, 0),
+(25, 19, '2026-01-31 06:00:00', 2, 500, 0), (26, 20, '2026-02-01 07:00:00', 4, 2100, 0),
+(27, 21, '2026-02-02 08:00:00', 1, 55, 0), (28, 22, '2026-02-03 09:00:00', 2, 1150, 0),
+(29, 24, '2026-02-04 10:00:00', 1, 1700, 0), (30, 13, '2026-02-05 11:00:00', 4, 390, 0),
+(31, 16, '2026-02-06 12:00:00', 1, 780, 0), (32, 17, '2026-02-07 13:00:00', 3, 95, 0),
+(33, 18, '2026-02-08 14:00:00', 4, 1450, 0), (34, 19, '2026-02-09 15:00:00', 2, 480, 0),
+(35, 20, '2026-02-10 16:00:00', 1, 3100, 0), (36, 21, '2026-02-11 17:00:00', 4, 880, 0);
 
--- ** Tablas de relación N:M o con muchas dependencias **
 
--- 22. combate (Depende de personaje, enemigo, habilidades)
-INSERT INTO `combate` VALUES (1,1,'2025-11-25 19:00:00',1,150,0),(1,2,'2025-11-25 19:05:00',2,500,0),(1,3,'2025-11-25 19:05:00',1,2500,0),(2,1,'2025-11-25 19:05:00',2,200,0),(2,3,'2025-11-25 22:03:00',1,1,0);
+-- Transacciones (36 registros, asegurando que cada par (Mercado, Personaje) sea único)
+-- NOTA: La tabla DDL original tiene PK en (fk_mercado, fk_personaje).
+-- Asumo que los personajes 1, 2, 3, 4, 5, 6 ya tienen una transacción inicial registrada.
+-- Voy a insertar los nuevos personajes (7-36) y saltar los IDs iniciales para evitar el Error 1062.
+INSERT INTO `transaccion` (`fk_mercado`, `fk_personaje`, `precio`, `fecha`, `fk_objeto`) VALUES
+-- Personajes 1-6 (Asumidos ya insertados, solo mantenemos los nuevos)
+(1, 7, 8.99, '2025-12-13 22:00:00', 6), -- Personaje 7 (Gabi)
+(1, 8, 15, '2025-12-14 23:00:00', 7), -- Personaje 8 (Héctor)
+(1, 9, 10.5, '2025-12-01 10:00:00', 1), -- Personaje 9
+(1, 10, 5, '2025-12-02 11:00:00', 2), -- Personaje 10
+(1, 11, 8.99, '2025-12-03 12:00:00', 6), -- Personaje 11
+(1, 12, 15, '2025-12-04 13:00:00', 7), -- Personaje 12
+(1, 13, 50, '2025-12-05 14:00:00', 8), -- Personaje 13
+(1, 14, 0.5, '2025-12-06 15:00:00', 13), -- Personaje 14
+(1, 15, 100, '2025-12-07 16:00:00', 10), -- Personaje 15
+(1, 16, 5, '2025-12-08 17:00:00', 2), -- Personaje 16
+(1, 17, 10.5, '2025-12-09 18:00:00', 1), -- Personaje 17
+(1, 18, 8.99, '2025-12-10 19:00:00', 6), -- Personaje 18
+(1, 19, 25.5, '2025-12-29 14:00:00', 21), -- Personaje 19
+(1, 20, 6.5, '2025-12-30 15:00:00', 22), -- Personaje 20
+(1, 21, 10.5, '2025-12-31 16:00:00', 1), -- Personaje 21
+(1, 22, 5, '2026-01-01 17:00:00', 2), -- Personaje 22
+(1, 23, 8.99, '2026-01-02 18:00:00', 6), -- Personaje 23
+(1, 24, 15, '2026-01-03 19:00:00', 7), -- Personaje 24
+(1, 25, 50, '2026-01-04 20:00:00', 8), -- Personaje 25
+(1, 26, 0.5, '2026-01-05 21:00:00', 13), -- Personaje 26
+(1, 27, 25.5, '2026-01-06 22:00:00', 21), -- Personaje 27
+(1, 28, 6.5, '2026-01-07 23:00:00', 22), -- Personaje 28
+(1, 29, 10.5, '2026-01-08 00:00:00', 1), -- Personaje 29
+(1, 30, 5,  '2026-01-09 01:00:00', 2), -- Personaje 30
+(1, 31, 8.99, '2026-01-10 02:00:00', 6), -- Personaje 31
+(1, 32, 15, '2026-01-11 03:00:00', 7), -- Personaje 32
+(1, 33, 50, '2026-01-12 04:00:00', 8), -- Personaje 33
+(1, 34, 0.5, '2026-01-13 05:00:00', 13), -- Personaje 34
+(1, 35, 25.5, '2026-01-14 06:00:00', 21), -- Personaje 35
+(1, 36, 6.5, '2026-01-15 07:00:00', 22); -- Personaje 36
 
--- 23. participacion_evento (Depende de evento, personaje)
-INSERT INTO `participacion_evento` VALUES (1,1,150),(1,2,200.5),(2,1,50);
-
--- 24. logro_has_personaje (Depende de logro, personaje)
-INSERT INTO `logro_has_personaje` VALUES (1,1,'2025-11-20 09:00:00'),(1,2,'2025-11-21 11:00:00');
-
--- 25. mision_completada (Depende de mision, personaje)
-INSERT INTO `mision_completada` VALUES (1,1,'2025-11-24','00:15:00'),(1,2,'2025-11-25','00:10:00');
-
--- 26. objeto (Depende de tipo, rareza, fuente, mercado)
-INSERT INTO `objeto` VALUES (1,'Espada de Hierro',1,10.5,'Ataque +5',1,1,2,1),(2,'Poción de Vida',1,5,'Restaura 100 Vida',3,1,2,1),(3,'Armadura Épica',20,500,'Defensa +50',2,3,3,NULL),(4,'Fragmento Mágico',5,2,'Material de crafteo',4,2,1,1);
-
--- 27. objeto_obtenido (Depende de objeto, personaje)
-INSERT INTO `objeto_obtenido` VALUES (3,1,'2025-11-24 10:00:00'),(4,1,'2025-11-30 13:59:25'),(4,2,'2025-11-25 15:30:00'),(4,2,'2025-11-30 14:06:11');
-
--- 28. transaccion (Depende de mercado, personaje, objeto)
-INSERT INTO `transaccion` VALUES (1,1,10.5,'2025-11-25 18:00:00',1),(1,3,5,'2025-11-25 18:05:00',2);
-
--- Volver a habilitar la verificación de claves foráneas
-SET FOREIGN_KEY_CHECKS = 1;
-
--- 2. Vacía la tabla base_stats y reinicia su contador AUTO_INCREMENT
-TRUNCATE TABLE base_stats;
-
--- 3. Vuelve a insertar los datos.
-INSERT INTO `base_stats` VALUES (1,120,80,50,20),(2,60,100,40,50),(3,30,40,60,150),(4,90,70,70,70);
+-- Participación en Eventos (90 registros, más del doble)
+-- NOTA: Eliminamos las entradas de los personajes 1-8 que generan conflicto con el DDL original.
+INSERT INTO `participacion_evento` (`fk_evento`, `fk_personaje`, `puntos`) VALUES
+(1, 9, 300.5), (2, 9, 500), (1, 10, 150), (2, 10, 180), (1, 11, 550.5), (2, 11, 700),
+(1, 12, 400), (2, 12, 600.5), (1, 13, 100), (2, 13, 250), (1, 14, 20.5), (2, 14, 50),
+(1, 15, 800), (2, 15, 1000), (1, 16, 75.5), (2, 16, 120), (1, 17, 500), (2, 17, 850),
+(1, 18, 150), (2, 18, 300.5), 
+(1, 19, 700), (2, 19, 950), (1, 20, 150), (2, 20, 250), (1, 21, 450), (2, 21, 600),
+(1, 22, 50), (2, 22, 80), (1, 23, 500), (2, 23, 750), (1, 24, 480), (2, 24, 720),
+(1, 25, 120), (2, 25, 200), (1, 26, 900), (2, 26, 1200), (1, 27, 20), (2, 27, 30),
+(1, 28, 800), (2, 28, 1100), (1, 29, 300), (2, 29, 450), (1, 30, 100), (2, 30, 150),
+(1, 31, 350), (2, 31, 500), (1, 32, 200), (2, 32, 300), (1, 33, 500), (2, 33, 750),
+(1, 34, 10), (2, 34, 15), (1, 35, 950), (2, 35, 1300), (1, 36, 100), (2, 36, 160);
