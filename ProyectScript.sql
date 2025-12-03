@@ -113,6 +113,46 @@ CALL RegistrarDerrotaEnemigo(3, 1, 1, 10, 1, 'DERROTA');
 
 
 
+-- Funciones
+
+-- Funcion para ver localización de una mision
+delimiter $$
+create function encontrar_mision(id_quest INT)
+returns varchar(255)
+deterministic
+begin
+	declare loc varchar(255);
+    select r.nombre into loc from region as r inner join npc on id_region=fk_region inner join mision on id_npc=fk_npc where id_mision=id_quest;
+    return loc;
+end$$
+
+delimiter ;
+
+select encontrar_mision(1);
+
+-- Funcion para hacer una media del poder
+delimiter $$
+create function estimar_poder(id_pers INT)
+returns float
+deterministic
+begin
+	declare total float;
+    select (ataque+defensa+velocidad+magia) into total from base_stats inner join personaje on id_base_stats=fk_base_stats where id_personaje=id_pers;
+    return total;
+end$$
+
+delimiter ;
+
+select estimar_poder(1);
+
+
+
+
+
+
+
+
+
 
 -- Triggers
 
@@ -129,9 +169,15 @@ BEGIN
         if v <= 0 then
 			update enemigo as e set e.vida = e.vida_base where new.id_enemigo= e.id_enemigo;
             call dropeo (new.id_personaje,new.id_enemigo);
+            update personaje set enemigos_derrotados = enemigos_derrotados+1;
 		end if;
 	else
 		update personaje as p set p.vida = p.vida - new.daño where new.id_personaje = p.id_personaje;
+        select vida into v from personaje where new.id_personaje= id_personaje;
+        if v <= 0 then
+			update personaje as e set e.vida = e.vida_base where new.id_personaje= e.id_personaje;
+            update enemigo set jugadores_derrotados = jugadores_derrotados+1;
+		end if;
 	end if;
 END$$
 delimiter ;
@@ -240,12 +286,12 @@ SELECT * FROM Vista_Promedio_clase;
 
 -- 3. Tasa exito misiones por tipo
 CREATE OR REPLACE VIEW Vista_Exito_Mision AS
-
+SELECT count(fk_mision)/aceptada*100 AS porcentaje_exito, tipo FROM mision INNER JOIN mision_completada ON id_mision = fk_mision GROUP BY aceptada, tipo;
 SELECT * FROM Vista_Exito_Mision;
 
 -- 4. Criaturas que generan mayor mortalidad
 CREATE OR REPLACE VIEW Vista_Mortalidad AS
-
+SELECT nombre, nivel, jugadores_derrotados FROM enemigo ORDER BY jugadores_derrotados DESC;
 SELECT * FROM Vista_Mortalidad;
 
 -- 5. Media, mediana y porcentil 90 de daño por combate
@@ -254,8 +300,15 @@ SELECT avg(daño) AS media FROM combate;
 
 SELECT * FROM Vista_Media_daño;
 
-CREATE OR REPLACE VIEW Vista_Media_Daño AS
-SELECT avg(daño) AS media FROM combate;
+CREATE OR REPLACE VIEW Vista_Mediana_Daño AS
+SELECT daño AS mediana FROM combate WHERE id_combate=count(daño)/2;
+
+SELECT * FROM Vista_Mediana_daño;
+
+CREATE OR REPLACE VIEW Vista_Porcentil AS
+-- SELECT * FROM combate ORDER BY daño desc LIMIT (SELECT ceil(count(daño)*0.1) FROM combate); ( NO funciona preguntar a profe)
+
+SELECT * FROM Vista_Porcentil;
 
 -- 6. Rareza mas frecuente
 CREATE OR REPLACE VIEW Vista_Rareza_Frecuente AS
@@ -302,7 +355,7 @@ SELECT * FROM Vista_Oro;
 
 -- 12. Correlacion entre clase y tasa de victorias en combate
 CREATE OR REPLACE VIEW Vista_Clase_Victoria AS
-
+SELECT sum(enemigos_derrotados), c.nombre FROM personaje INNER JOIN clase AS c ON id_clase=fk_clase GROUP BY c.nombre;
 SELECT * FROM Vista_Clase_Victoria;
 
 
