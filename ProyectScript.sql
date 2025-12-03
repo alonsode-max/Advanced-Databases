@@ -567,3 +567,21 @@ REVOKE INSERT, UPDATE, DELETE ON databases.* FROM 'observador_lector'@'localhost
 FLUSH PRIVILEGES;
 
 SELECT user, host FROM mysql.user;
+
+-- Rol administrador
+CREATE USER 'admin_user'@'%' IDENTIFIED BY 'contraseña';
+
+GRANT ALL PRIVILEGES ON databases.* TO 'admin_user'@'%';
+
+FLUSH PRIVILEGES;
+
+
+-- Rol analitico
+CREATE USER 'analitico_user'@'%' IDENTIFIED BY 'KljIz35!-G';
+
+GRANT SELECT ON databases.* TO 'analitico_user'@'%';
+GRANT EXECUTE ON PROCEDURE databases.dropeo TO 'analitico_user'@'%';
+GRANT EXECUTE ON FUNCTION databases.encontrar_mision TO 'analitico_user'@'%';
+GRANT EXECUTE ON FUNCTION databases.estimar_poder TO 'analitico_user'@'%';
+
+FLUSH PRIVILEGES;
