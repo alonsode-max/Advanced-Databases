@@ -34,9 +34,15 @@ BEGIN
         if v <= 0 then
 			update enemigo as e set e.vida = e.vida_base where new.id_enemigo= e.id_enemigo;
             call dropeo (new.id_personaje,new.id_enemigo);
+            update personaje set enemigos_derrotados = enemigos_derrotados+1;
 		end if;
 	else
 		update personaje as p set p.vida = p.vida - new.daño where new.id_personaje = p.id_personaje;
+        select vida into v from personaje where new.id_personaje= id_personaje;
+        if v <= 0 then
+			update personaje as e set e.vida = e.vida_base where new.id_personaje= e.id_personaje;
+            update enemigo set jugadores_derrotados = jugadores_derrotados+1;
+		end if;
 	end if;
 END$$
 delimiter ;
@@ -98,7 +104,7 @@ SELECT * FROM Vista_Promedio_clase;
 
 -- 3. Tasa exito misiones por tipo
 CREATE OR REPLACE VIEW Vista_Exito_Mision AS
-
+SELECT count(fk_mision)/aceptada*100 AS porcentaje_exito, tipo FROM mision INNER JOIN mision_completada ON id_mision = fk_mision GROUP BY aceptada, tipo;
 SELECT * FROM Vista_Exito_Mision;
 
 -- 4. Criaturas que generan mayor mortalidad
