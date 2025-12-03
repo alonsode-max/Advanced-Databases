@@ -474,3 +474,43 @@ FROM
     personaje p
 GROUP BY
     Tipo_Jugador;
+
+
+-- usuarios  roles
+CREATE USER IF NOT EXISTS 'operador_mantenimiento'@'localhost' IDENTIFIED BY 'maint_pass';
+CREATE USER IF NOT EXISTS 'jugador_restringido'@'localhost' IDENTIFIED BY 'player_pass';
+CREATE USER IF NOT EXISTS 'observador_lector'@'localhost' IDENTIFIED BY 'read_pass';
+
+-- USUARIO 1: OPERADOR DE MANTENIMIENTO
+-- Rol: Modificar datos de balance, ejecutar procs.
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON databases.* TO 'operador_mantenimiento'@'localhost';
+
+GRANT EXECUTE ON FUNCTION databases.CalcularNivelPorXP TO 'operador_mantenimiento'@'localhost';
+GRANT EXECUTE ON FUNCTION databases.ObtenerMargenObjeto TO 'operador_mantenimiento'@'localhost';
+GRANT EXECUTE ON PROCEDURE databases.ActualizarFinSesion TO 'operador_mantenimiento'@'localhost';
+GRANT EXECUTE ON PROCEDURE databases.RegistrarDerrotaEnemigo TO 'operador_mantenimiento'@'localhost';
+
+-- USUARIO 2: JUGADOR RESTRINGIDO
+-- Rol: Registrar su propia actividad, pero no alterar el balance global.
+
+GRANT SELECT ON databases.* TO 'jugador_restringido'@'localhost';
+
+-- Permisos de INSERT/UPDATE solo para tablas transaccionales de jugador
+GRANT INSERT, UPDATE ON databases.combate TO 'jugador_restringido'@'localhost';
+GRANT INSERT, UPDATE ON databases.transaccion TO 'jugador_restringido'@'localhost';
+GRANT INSERT, UPDATE ON databases.mision_completada TO 'jugador_restringido'@'localhost';
+GRANT INSERT, UPDATE ON databases.logro_has_personaje TO 'jugador_restringido'@'localhost';
+GRANT INSERT, UPDATE ON databases.participacion_evento TO 'jugador_restringido'@'localhost';
+-- NOTA: Se restringe el UPDATE en 'personaje' para que no pueda alterar su propio oro/nivel directamente.
+
+-- USUARIO 3: OBSERVADOR/LECTOR
+-- Rol: Solo lectura para reportes y análisis.
+GRANT SELECT ON databases.* TO 'observador_lector'@'localhost';
+
+-- Revocar cualquier permiso de modificación accidental
+REVOKE INSERT, UPDATE, DELETE ON databases.* FROM 'observador_lector'@'localhost';
+
+FLUSH PRIVILEGES;
+
+SELECT user, host FROM mysql.user;
