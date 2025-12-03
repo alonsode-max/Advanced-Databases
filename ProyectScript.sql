@@ -14,6 +14,101 @@ DELIMITER ;
 
 
 
+-- PROCEDIMIENTO : REGISTRAR FIN DE SESIÓN Y ACTUALIZAR PERSONAJE
+-- Objetivo: Actualiza las horas totales del personaje y calcula
+-- las ganancias de oro por sesión (asume 10 de oro por hora).
+DROP PROCEDURE IF EXISTS `ActualizarFinSesion`;
+
+DELIMITER //
+CREATE PROCEDURE `ActualizarFinSesion`(
+    IN p_id_sesion INT
+)
+BEGIN
+    DECLARE v_id_personaje INT;
+    DECLARE v_fecha_inicio DATETIME;
+    DECLARE v_duracion_horas DECIMAL(10, 2);
+    DECLARE v_oro_ganado INT;
+
+    SELECT fk_personaje, fecha_inicio, fecha_fin
+    INTO v_id_personaje, v_fecha_inicio, @v_fecha_fin_actual
+    FROM sesion
+    WHERE id_sesion = p_id_sesion;
+
+    IF v_id_personaje IS NULL OR @v_fecha_fin_actual IS NOT NULL THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Sesión no encontrada o ya finalizada.';
+    END IF;
+
+    UPDATE sesion
+    SET fecha_fin = NOW()
+    WHERE id_sesion = p_id_sesion;
+
+    SET v_duracion_horas = TIMESTAMPDIFF(MINUTE, v_fecha_inicio, NOW()) / 60.0;
+
+    SET v_oro_ganado = FLOOR(v_duracion_horas * 10); -- tambien para redondear redondea hacia arriba
+
+    UPDATE personaje
+    SET
+        horas = horas + CEIL(v_duracion_horas), -- ceil se utiliza para redondear un número decimal
+        oro = oro + v_oro_ganado
+    WHERE
+        id_personaje = v_id_personaje;
+
+    SELECT 'Sesión finalizada y personaje actualizado' AS Resultado,
+           v_duracion_horas AS Duracion_Total_Horas,
+           v_oro_ganado AS Oro_Ganado;
+END //
+DELIMITER ;
+
+INSERT INTO sesion (id_sesion, fecha_inicio, fk_personaje) VALUES (999, DATE_SUB(NOW(), INTERVAL 90 MINUTE), 1);
+
+ CALL ActualizarFinSesion(999);
+ 
+ 
+-- PROCEDIMIENTO 2: REGISTRAR COMBATE Y ACTUALIZAR CONTADORES DE DEFENSA
+-- Objetivo: Registra la derrota de un enemigo y actualiza los contadores
+-- de ambos lados (personaje y enemigo).
+DROP PROCEDURE IF EXISTS `RegistrarDerrotaEnemigo`;
+
+DELIMITER //
+CREATE PROCEDURE `RegistrarDerrotaEnemigo`(
+    IN p_id_personaje INT,
+    IN p_id_enemigo INT,
+    IN p_fk_habilidades INT,
+    IN p_dano INT,
+    IN p_ataque_enemigo TINYINT,
+    IN p_resultado VARCHAR(10) -- 'VICTORIA' o 'DERROTA'
+)
+BEGIN
+    -- 1. Registrar la entrada de combate en la tabla 'combate'
+    INSERT INTO combate (id_personaje, id_enemigo, fecha, fk_habilidades, daño, ataque_enemigo)
+    VALUES (p_id_personaje, p_id_enemigo, NOW(), p_fk_habilidades, p_dano, p_ataque_enemigo);
+
+    IF p_resultado = 'VICTORIA' THEN
+        UPDATE personaje
+        SET enemigos_derrotados = enemigos_derrotados + 1
+        WHERE id_personaje = p_id_personaje;
+
+        SELECT 'VICTORIA - Contadores de Personaje y Combate Actualizados' AS Resultado;
+
+    ELSEIF p_resultado = 'DERROTA' THEN
+        UPDATE enemigo
+        SET jugadores_derrotados = jugadores_derrotados + 1
+        WHERE id_enemigo = p_id_enemigo;
+
+        SELECT 'DERROTA - Contador de Enemigo y Combate Actualizados' AS Resultado;
+
+    ELSE
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Resultado de combate no válido. Debe ser VICTORIA o DERROTA.';
+    END IF;
+
+END //
+DELIMITER ;
+
+ CALL RegistrarDerrotaEnemigo(1, 2, 1, 500, 0, 'VICTORIA');
+
+-- Derrota del Personaje (Personaje 3 es derrotado por Enemigo 1)
+CALL RegistrarDerrotaEnemigo(3, 1, 1, 10, 1, 'DERROTA');
+
 
 
 
@@ -74,6 +169,53 @@ insert into sesion(fecha_inicio,fecha_fin,fk_personaje) values("2025-01-01 20:00
 
 
 
+-- -- TRIGGER : ASIGNACIÓN DE RANGO DE GREMIO POR DEFECTO
+-- si un personaje es añadido a miembro gremio si especificar el rengao automaticamente se el añade 1
+
+DROP TRIGGER IF EXISTS `before_miembro_gremio_insert`;
+
+DELIMITER //
+CREATE TRIGGER `before_miembro_gremio_insert`
+BEFORE INSERT ON `miembro_gremio`
+FOR EACH ROW
+BEGIN
+    -- Comprueba si el fk_rango_gremio es 0, NULL, o no fue establecido (usando NEW.rango)
+    -- Asumimos que 'Miembro' tiene ID 1.
+    IF NEW.fk_rango_gremio IS NULL OR NEW.fk_rango_gremio = 0 THEN
+        SET NEW.fk_rango_gremio = 1;
+        SET NEW.rango = 'Miembro';
+    END IF;
+END //
+DELIMITER ;
+
+INSERT INTO miembro_gremio (fecha_ingreso, fk_personaje, fk_gremio, rango, fk_rango_gremio)
+VALUES (CURDATE(), 10, 3, 'Sin Asignar', NULL);
+
+-- TRIGGER : LOGICA ECONOMICA DESPUÉS DE LA TRANSACCIÓN
+-- Después de registrar una compra en 'transaccion',
+-- resta el oro al personaje comprador y actualiza su contador de compras.
+
+DROP TRIGGER IF EXISTS `after_transaccion_insert`;
+
+DELIMITER //
+CREATE TRIGGER `after_transaccion_insert`
+AFTER INSERT ON `transaccion`
+FOR EACH ROW
+BEGIN
+    DECLARE v_costo DECIMAL(10, 2);
+
+    -- 1. Obtener el precio total de la transacción (que es el costo para el personaje)
+    SET v_costo = NEW.precio;
+
+    -- 2. Restar el costo del Oro del Personaje
+    UPDATE personaje
+    SET oro = oro - v_costo
+    WHERE id_personaje = NEW.fk_personaje;
+    
+END //
+DELIMITER ;
+INSERT INTO transaccion (fk_mercado, fk_personaje, precio, fecha, fk_objeto)
+VALUES (1, 8, 25.5, NOW(), 21);
 
 
 
